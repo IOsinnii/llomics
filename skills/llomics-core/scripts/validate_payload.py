@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""Validate an llomics payload against contract v0.1. Standard library only.
+"""Validate an llomics payload against the contract. Standard library only.
 
 Usage:
     python validate_payload.py payload.json [--unit-budget 8000]
 
-Exit code 0 means no errors (warnings may still be printed); 1 means errors.
+Reads llomics-contract.json from the directory this file is in. Exit code 0 means no errors
+(warnings may still be printed); 1 means errors.
+
+This file is the same in the Python package (llomics/validate.py) and in the llomics-core skill
+(scripts/validate_payload.py); tools/sync.py keeps the copies identical.
 """
 
 from __future__ import annotations
@@ -12,27 +16,12 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import re
 import sys
 from pathlib import Path
 from typing import Any
 
-STATUSES = {"pass", "warn", "fail", "not_run", "not_applicable"}
-
-REQUIRED_CHECKS: dict[str, list[str]] = {
-    "clusters": ["pseudoreplication", "doublet_detection", "cluster_stability", "batch_integration"],
-    "pca": ["scaling_declared", "technical_covariate_association", "outlier_influence", "component_selection"],
-    "limma": ["replicates", "pvalue_distribution", "batch_confounding", "multiple_testing", "mean_variance"],
-    # two-group differential tests from other tools (scanpy rank_genes_groups with a reference, Seurat FindMarkers)
-    "dge": ["replicates", "pvalue_distribution", "batch_confounding", "multiple_testing", "mean_variance"],
-    "glm": ["convergence", "separation", "overdispersion", "collinearity", "events_per_variable"],
-    "lasso": ["nested_cv", "leakage", "selection_stability", "null_comparison"],
-    "plsda": ["permutation_test", "cv_performance", "overfit_gap", "leakage", "ncomp_selection"],
-}
-
-RUN_KEYS = ["analysis_id", "question", "tool", "steps", "filters", "source_tables"]
-DATASET_KEYS = ["n_observations", "observation_type", "n_features", "reference"]
-P_KEY = re.compile(r"^(p|p_adj|padj|pval|pval_adj|p_value|pvalue|q|qvalue|fdr)$", re.IGNORECASE)
+CONTRACT = json.loads(Path(__file__).with_name("llomics-contract.json").read_text(encoding="utf-8"))
+P_KEYS = {k.lower() for k in CONTRACT["p_value_keys"]}
 
 
 def walk(node: Any, path: str, errors: list[str]) -> None:
@@ -40,7 +29,7 @@ def walk(node: Any, path: str, errors: list[str]) -> None:
     if isinstance(node, dict):
         for key, value in node.items():
             child = f"{path}.{key}"
-            if P_KEY.match(key) and isinstance(value, (int, float)) and not isinstance(value, bool):
+            if key.lower() in P_KEYS and isinstance(value, (int, float)) and not isinstance(value, bool):
                 if value == 0:
                     errors.append(f"{child}: p-value is exactly 0 (underflow); clamp to run.p_floor")
                 elif not (0 < value <= 1):
@@ -62,14 +51,15 @@ def feature_rows(top_features: Any) -> list[Any] | None:
     return None
 
 
-def validate(payload: Any, unit_budget: int) -> tuple[list[str], list[str]]:
+def validate(payload: Any, unit_budget: int | None = None) -> tuple[list[str], list[str]]:
+    """Return (errors, warnings) for a parsed payload."""
+    unit_budget = unit_budget or CONTRACT["defaults"]["unit_budget_chars"]
     errors: list[str] = []
     warnings: list[str] = []
 
     if not isinstance(payload, dict):
         return ["payload must be a JSON object"], warnings
-
-    for key in ("llomics", "method", "run", "dataset", "trust", "units"):
+    for key in CONTRACT["top_level_keys"]:
         if key not in payload:
             errors.append(f"missing top-level key: {key}")
     if errors:
@@ -77,9 +67,11 @@ def validate(payload: Any, unit_budget: int) -> tuple[list[str], list[str]]:
 
     method = payload["method"]
     run, dataset, trust, units = payload["run"], payload["dataset"], payload["trust"], payload["units"]
+    if str(payload["llomics"]) != CONTRACT["version"]:
+        warnings.append(f"payload is contract {payload['llomics']}; this validator is {CONTRACT['version']}")
 
     # L0 run card
-    for key in RUN_KEYS:
+    for key in CONTRACT["run_keys"]:
         if key not in run:
             errors.append(f"run.{key} is missing")
     if isinstance(run.get("filters"), list):
@@ -88,35 +80,39 @@ def validate(payload: Any, unit_budget: int) -> tuple[list[str], list[str]]:
                 errors.append(f"run.filters[{i}] needs a 'rule'")
     if not run.get("source_tables"):
         warnings.append("run.source_tables is empty: no L2 drill-down path for dropped rows")
+    if not run.get("question"):
+        warnings.append("run.question is empty: the model is not told what the analysis is for")
 
-    for key in DATASET_KEYS:
+    for key in CONTRACT["dataset_keys"]:
         if key not in dataset:
             errors.append(f"dataset.{key} is missing")
     if "reference" in dataset and not isinstance(dataset["reference"], dict):
         errors.append("dataset.reference must be an object (may be empty)")
 
     # Trust layer
+    statuses = set(CONTRACT["statuses"])
     seen: dict[str, str] = {}
     if not isinstance(trust, list):
         errors.append("trust must be a list of checks")
         trust = []
-    for i, check in enumerate(trust):
-        if not isinstance(check, dict) or "check" not in check or "status" not in check:
+    for i, chk in enumerate(trust):
+        if not isinstance(chk, dict) or "check" not in chk or "status" not in chk:
             errors.append(f"trust[{i}] needs 'check' and 'status'")
             continue
-        status = check["status"]
-        if status not in STATUSES:
-            errors.append(f"trust[{i}] ({check['check']}): status '{status}' not in {sorted(STATUSES)}")
-        if status in {"warn", "fail", "not_applicable"} and not check.get("note"):
-            errors.append(f"trust[{i}] ({check['check']}): status '{status}' needs a 'note'")
-        seen[check["check"]] = status
+        status = chk["status"]
+        if status not in statuses:
+            errors.append(f"trust[{i}] ({chk['check']}): status '{status}' not in {sorted(statuses)}")
+        if status in CONTRACT["note_required_for"] and not chk.get("note"):
+            errors.append(f"trust[{i}] ({chk['check']}): status '{status}' needs a 'note'")
+        seen[chk["check"]] = status
 
-    if method in REQUIRED_CHECKS:
-        for name in REQUIRED_CHECKS[method]:
+    spec = CONTRACT["methods"].get(method)
+    if spec:
+        for name in spec["required_checks"]:
             if name not in seen:
                 errors.append(f"trust: required check '{name}' for method '{method}' is absent (use not_run)")
     else:
-        warnings.append(f"method '{method}' has no required-check list; trust layer not enforced")
+        errors.append(f"method '{method}' is not in the contract; known methods: {sorted(CONTRACT['methods'])}")
 
     not_run = sorted(name for name, status in seen.items() if status == "not_run")
     failed = sorted(name for name, status in seen.items() if status == "fail")
@@ -136,13 +132,16 @@ def validate(payload: Any, unit_budget: int) -> tuple[list[str], list[str]]:
         if not isinstance(unit, dict):
             errors.append(f"{where} must be an object")
             continue
-        for key in ("unit_id", "unit_type", "top_features", "tail"):
+        for key in CONTRACT["unit_keys"]:
             if key not in unit:
                 errors.append(f"{where}.{key} is missing")
         uid = str(unit.get("unit_id"))
         if uid in ids:
             errors.append(f"{where}: duplicate unit_id '{uid}'")
         ids.add(uid)
+        if spec and "unit_type" in unit and unit["unit_type"] not in spec["unit_types"]:
+            errors.append(f"{where} ({uid}): unit_type '{unit['unit_type']}' is not valid for method '{method}' "
+                          f"(expected one of {spec['unit_types']})")
 
         rows = feature_rows(unit.get("top_features"))
         if rows is None:
@@ -155,7 +154,7 @@ def validate(payload: Any, unit_budget: int) -> tuple[list[str], list[str]]:
 
         tail = unit.get("tail")
         if isinstance(tail, dict):
-            if "n_shown" not in tail or "n_eligible" not in tail:
+            if any(k not in tail for k in CONTRACT["tail_keys"]):
                 errors.append(f"{where}.tail needs 'n_shown' and 'n_eligible' (n_eligible may be null)")
             else:
                 if tail["n_shown"] != len(rows):
@@ -185,9 +184,9 @@ def validate(payload: Any, unit_budget: int) -> tuple[list[str], list[str]]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate an llomics payload (contract v0.1).")
+    parser = argparse.ArgumentParser(description="Validate an llomics payload against the contract.")
     parser.add_argument("payload", type=Path)
-    parser.add_argument("--unit-budget", type=int, default=8000, help="max compact-JSON chars per unit")
+    parser.add_argument("--unit-budget", type=int, default=None, help="max compact-JSON chars per unit")
     args = parser.parse_args()
 
     try:

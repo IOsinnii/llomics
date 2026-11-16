@@ -14,4 +14,7 @@ scanpy = ["scanpy>=1.10", "pandas", "numpy"]
 bedrock = ["anthropic"]
 
 [tool.setuptools]
-packages = ["llomics"]
+packages = ["llomics", "llomics.adapters"]
+
+[tool.setuptools.package-data]
+llomics = ["llomics-contract.json"]
