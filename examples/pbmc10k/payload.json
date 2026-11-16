@@ -1,0 +1,2600 @@
+{
+  "llomics": "0.1",
+  "method": "clusters",
+  "run": {
+    "analysis_id": "pbmc10k-v3-leiden-r0.6",
+    "question": "Which canonical PBMC population is each Leiden cluster, and can the label be trusted?",
+    "tool": "scanpy sc.tl.rank_genes_groups(method='wilcoxon', use_raw=True), one cluster vs rest",
+    "steps": [
+      "10x Genomics pbmc_10k_v3 filtered feature-barcode matrix",
+      "cells: n_genes >= 200, n_genes <= 5000, pct_counts_mt < 15; genes: min_cells = 3",
+      "Scrublet on raw counts, expected_doublet_rate = 0.06, 30 PCs, exact neighbours",
+      "normalize_total(1e4), log1p",
+      "2000 highly variable genes, scale(max_value=10), PCA (arpack)",
+      "neighbors(n_neighbors=15, n_pcs=30), Leiden(resolution=0.6), UMAP"
+    ],
+    "filters": [
+      {
+        "rule": "marker list excludes ^(MT-|RP[LS][0-9AP]|MALAT1$)",
+        "why": "technical signal; applied to the marker list only, not to clustering"
+      },
+      {
+        "rule": "pvals_adj < 0.05 and logfoldchanges > 0",
+        "why": "significant, up-regulated markers only"
+      },
+      {
+        "rule": "top 15 by adjusted p then logFC; never padded",
+        "why": "payload size"
+      }
+    ],
+    "p_floor": 1e-300,
+    "n_p_values_floored": 71,
+    "panel_units": "mean log-normalised expression across the cluster's cells",
+    "source_tables": {
+      "anndata": "input/processed/pbmc10k_clustered.h5ad (uns['rank_genes_groups'])"
+    }
+  },
+  "dataset": {
+    "n_observations": 10639,
+    "observation_type": "cell",
+    "n_biological_samples": 1,
+    "n_features": null,
+    "n_units": 19,
+    "reference": {
+      "median_genes": 2030.0,
+      "median_pct_mt": 8.59,
+      "median_pct_predicted_doublet": 3.6,
+      "definition": "median of per-cluster medians (each cluster weighted equally)"
+    }
+  },
+  "trust": [
+    {
+      "check": "pseudoreplication",
+      "status": "warn",
+      "note": "One donor; cells are the replicates. Wilcoxon p-values rank markers and are not evidence of a population-level difference."
+    },
+    {
+      "check": "doublet_detection",
+      "status": "pass",
+      "note": "Scrublet on raw counts. The 6% expected doublet rate is an assumption."
+    },
+    {
+      "check": "cluster_stability",
+      "status": "not_run"
+    },
+    {
+      "check": "batch_integration",
+      "status": "not_applicable",
+      "note": "Single sample, single batch."
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "0",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 971,
+        "pct_of_total": 9.13
+      },
+      "facts": {
+        "median_genes": 1896.0,
+        "median_umis": 6747.0,
+        "median_pct_mt": 8.43,
+        "median_doublet_score": 0.0645,
+        "pct_predicted_doublet": 0.93,
+        "genes_vs_reference": 0.93,
+        "pct_mt_minus_reference": -0.16,
+        "doublet_fraction_vs_reference": 0.26
+      },
+      "top_features": [
+        {
+          "feature": "IL7R",
+          "effect": 3.454,
+          "stat": 39.59,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "IL32",
+          "effect": 3.074,
+          "stat": 36.95,
+          "p_adj": 7.86e-295
+        },
+        {
+          "feature": "TRAC",
+          "effect": 2.508,
+          "stat": 32.87,
+          "p_adj": 3.43e-233
+        },
+        {
+          "feature": "LDHB",
+          "effect": 1.775,
+          "stat": 32.19,
+          "p_adj": 1.337e-223
+        },
+        {
+          "feature": "LTB",
+          "effect": 2.312,
+          "stat": 32.15,
+          "p_adj": 3.305e-223
+        },
+        {
+          "feature": "EEF1A1",
+          "effect": 0.619,
+          "stat": 29.55,
+          "p_adj": 2.293e-188
+        },
+        {
+          "feature": "TPT1",
+          "effect": 0.559,
+          "stat": 29.51,
+          "p_adj": 6.84e-188
+        },
+        {
+          "feature": "CD3D",
+          "effect": 2.154,
+          "stat": 28.65,
+          "p_adj": 3.341e-177
+        },
+        {
+          "feature": "CD2",
+          "effect": 2.151,
+          "stat": 28.0,
+          "p_adj": 1.778e-169
+        },
+        {
+          "feature": "CD3E",
+          "effect": 1.93,
+          "stat": 26.8,
+          "p_adj": 2.549e-155
+        },
+        {
+          "feature": "CD3G",
+          "effect": 1.969,
+          "stat": 26.71,
+          "p_adj": 3.122e-154
+        },
+        {
+          "feature": "B2M",
+          "effect": 0.411,
+          "stat": 26.2,
+          "p_adj": 1.74e-148
+        },
+        {
+          "feature": "AQP3",
+          "effect": 2.441,
+          "stat": 24.7,
+          "p_adj": 4.667e-132
+        },
+        {
+          "feature": "NOSIP",
+          "effect": 1.592,
+          "stat": 24.27,
+          "p_adj": 1.401e-127
+        },
+        {
+          "feature": "ARHGAP15",
+          "effect": 1.637,
+          "stat": 23.9,
+          "p_adj": 1.1e-123
+        }
+      ],
+      "panel": {
+        "CD3D": 1.7229,
+        "CD4": 0.4076,
+        "CD8A": 0.074,
+        "IL7R": 2.5854,
+        "CCR7": 0.2296,
+        "MS4A1": 0.0408,
+        "CD79A": 0.0339,
+        "CD14": 0.0255,
+        "LYZ": 0.7368,
+        "FCGR3A": 0.0197,
+        "MS4A7": 0.0184,
+        "GNLY": 0.103,
+        "NKG7": 0.1342,
+        "FCER1A": 0.0037,
+        "CST3": 0.1077,
+        "PPBP": 0.0472
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "1",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 176,
+        "pct_of_total": 1.65
+      },
+      "facts": {
+        "median_genes": 4006.5,
+        "median_umis": 19160.5,
+        "median_pct_mt": 8.05,
+        "median_doublet_score": 0.0437,
+        "pct_predicted_doublet": 6.25,
+        "genes_vs_reference": 1.97,
+        "pct_mt_minus_reference": -0.54,
+        "doublet_fraction_vs_reference": 1.74
+      },
+      "top_features": [
+        {
+          "feature": "HLA-DPB1",
+          "effect": 4.561,
+          "stat": 22.26,
+          "p_adj": 1.763e-105
+        },
+        {
+          "feature": "HLA-DPA1",
+          "effect": 4.595,
+          "stat": 22.16,
+          "p_adj": 8.513e-105
+        },
+        {
+          "feature": "HLA-DRA",
+          "effect": 4.485,
+          "stat": 21.93,
+          "p_adj": 8.578e-103
+        },
+        {
+          "feature": "HLA-DRB1",
+          "effect": 4.217,
+          "stat": 21.74,
+          "p_adj": 4.704e-101
+        },
+        {
+          "feature": "CST3",
+          "effect": 4.181,
+          "stat": 21.37,
+          "p_adj": 1.071e-97
+        },
+        {
+          "feature": "CD74",
+          "effect": 3.863,
+          "stat": 21.29,
+          "p_adj": 4.853e-97
+        },
+        {
+          "feature": "HLA-DQB1",
+          "effect": 4.264,
+          "stat": 21.19,
+          "p_adj": 3.472e-96
+        },
+        {
+          "feature": "HLA-DRB5",
+          "effect": 3.731,
+          "stat": 21.0,
+          "p_adj": 1.588e-94
+        },
+        {
+          "feature": "HLA-DQA2",
+          "effect": 3.925,
+          "stat": 20.91,
+          "p_adj": 1.019e-93
+        },
+        {
+          "feature": "HLA-DQA1",
+          "effect": 4.414,
+          "stat": 20.67,
+          "p_adj": 1.198e-91
+        },
+        {
+          "feature": "HLA-DMA",
+          "effect": 3.19,
+          "stat": 20.23,
+          "p_adj": 9.434e-88
+        },
+        {
+          "feature": "FCER1A",
+          "effect": 7.047,
+          "stat": 19.29,
+          "p_adj": 1.042e-79
+        },
+        {
+          "feature": "SAMHD1",
+          "effect": 2.2,
+          "stat": 18.92,
+          "p_adj": 1.104e-76
+        },
+        {
+          "feature": "HLA-DMB",
+          "effect": 2.848,
+          "stat": 18.65,
+          "p_adj": 1.829e-74
+        },
+        {
+          "feature": "CCDC88A",
+          "effect": 2.857,
+          "stat": 18.5,
+          "p_adj": 2.654e-73
+        }
+      ],
+      "panel": {
+        "CD3D": 0.0409,
+        "CD4": 0.6378,
+        "CD8A": 0.016,
+        "IL7R": 0.0557,
+        "CCR7": 0.0075,
+        "MS4A1": 0.054,
+        "CD79A": 0.033,
+        "CD14": 0.3211,
+        "LYZ": 4.4349,
+        "FCGR3A": 0.0347,
+        "MS4A7": 0.4205,
+        "GNLY": 0.0694,
+        "NKG7": 0.2001,
+        "FCER1A": 1.7679,
+        "CST3": 3.7129,
+        "PPBP": 0.0536
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "2",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 953,
+        "pct_of_total": 8.96
+      },
+      "facts": {
+        "median_genes": 2306.0,
+        "median_umis": 7570.0,
+        "median_pct_mt": 9.1,
+        "median_doublet_score": 0.0294,
+        "pct_predicted_doublet": 0.1,
+        "genes_vs_reference": 1.14,
+        "pct_mt_minus_reference": 0.51,
+        "doublet_fraction_vs_reference": 0.03
+      },
+      "top_features": [
+        {
+          "feature": "S100A8",
+          "effect": 6.333,
+          "stat": 49.02,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "S100A9",
+          "effect": 5.95,
+          "stat": 46.54,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "S100A12",
+          "effect": 5.113,
+          "stat": 46.98,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "LYZ",
+          "effect": 4.844,
+          "stat": 42.66,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "VCAN",
+          "effect": 4.379,
+          "stat": 44.58,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "MNDA",
+          "effect": 3.997,
+          "stat": 44.41,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CYP1B1",
+          "effect": 3.938,
+          "stat": 38.04,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "FCN1",
+          "effect": 3.86,
+          "stat": 40.77,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "PLBD1",
+          "effect": 3.77,
+          "stat": 41.96,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "AC020656.1",
+          "effect": 3.536,
+          "stat": 42.42,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "RGS2",
+          "effect": 3.397,
+          "stat": 41.5,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD14",
+          "effect": 3.394,
+          "stat": 38.68,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "MEGF9",
+          "effect": 3.217,
+          "stat": 37.95,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CSTA",
+          "effect": 3.187,
+          "stat": 39.57,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD36",
+          "effect": 3.084,
+          "stat": 37.92,
+          "p_adj": 1e-300
+        }
+      ],
+      "panel": {
+        "CD3D": 0.035,
+        "CD4": 0.4632,
+        "CD8A": 0.0119,
+        "IL7R": 0.0424,
+        "CCR7": 0.0049,
+        "MS4A1": 0.0347,
+        "CD79A": 0.029,
+        "CD14": 2.0317,
+        "LYZ": 5.1001,
+        "FCGR3A": 0.0463,
+        "MS4A7": 0.7293,
+        "GNLY": 0.0738,
+        "NKG7": 0.0964,
+        "FCER1A": 0.0755,
+        "CST3": 2.9328,
+        "PPBP": 0.116
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "3",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 601,
+        "pct_of_total": 5.65
+      },
+      "facts": {
+        "median_genes": 2030.0,
+        "median_umis": 5080.0,
+        "median_pct_mt": 8.58,
+        "median_doublet_score": 0.009,
+        "pct_predicted_doublet": 4.66,
+        "genes_vs_reference": 1.0,
+        "pct_mt_minus_reference": -0.01,
+        "doublet_fraction_vs_reference": 1.29
+      },
+      "top_features": [
+        {
+          "feature": "GNLY",
+          "effect": 8.513,
+          "stat": 40.25,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "KLRF1",
+          "effect": 7.16,
+          "stat": 38.82,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "NKG7",
+          "effect": 6.669,
+          "stat": 40.21,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "KLRD1",
+          "effect": 6.482,
+          "stat": 39.2,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "PRF1",
+          "effect": 6.11,
+          "stat": 39.77,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "GZMA",
+          "effect": 5.449,
+          "stat": 38.61,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CST7",
+          "effect": 5.188,
+          "stat": 38.05,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "HOPX",
+          "effect": 4.933,
+          "stat": 38.05,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CTSW",
+          "effect": 4.884,
+          "stat": 38.9,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD247",
+          "effect": 3.89,
+          "stat": 37.72,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD7",
+          "effect": 3.717,
+          "stat": 36.57,
+          "p_adj": 1.35e-289
+        },
+        {
+          "feature": "GZMB",
+          "effect": 6.916,
+          "stat": 36.39,
+          "p_adj": 1.193e-286
+        },
+        {
+          "feature": "TRDC",
+          "effect": 6.189,
+          "stat": 35.93,
+          "p_adj": 1.9e-279
+        },
+        {
+          "feature": "IL2RB",
+          "effect": 5.45,
+          "stat": 35.51,
+          "p_adj": 4.459e-273
+        },
+        {
+          "feature": "GZMM",
+          "effect": 3.821,
+          "stat": 35.23,
+          "p_adj": 9.926e-269
+        }
+      ],
+      "panel": {
+        "CD3D": 0.2083,
+        "CD4": 0.0305,
+        "CD8A": 0.3315,
+        "IL7R": 0.1832,
+        "CCR7": 0.0509,
+        "MS4A1": 0.0432,
+        "CD79A": 0.0378,
+        "CD14": 0.0251,
+        "LYZ": 0.7923,
+        "FCGR3A": 1.6014,
+        "MS4A7": 0.0285,
+        "GNLY": 4.5677,
+        "NKG7": 3.9543,
+        "FCER1A": 0.0045,
+        "CST3": 0.209,
+        "PPBP": 0.0445
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "4",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 933,
+        "pct_of_total": 8.77
+      },
+      "facts": {
+        "median_genes": 1521.0,
+        "median_umis": 4737.0,
+        "median_pct_mt": 9.99,
+        "median_doublet_score": 0.0187,
+        "pct_predicted_doublet": 0.11,
+        "genes_vs_reference": 0.75,
+        "pct_mt_minus_reference": 1.4,
+        "doublet_fraction_vs_reference": 0.03
+      },
+      "top_features": [
+        {
+          "feature": "TCL1A",
+          "effect": 7.847,
+          "stat": 47.91,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "IGHM",
+          "effect": 7.349,
+          "stat": 49.26,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "IGHD",
+          "effect": 7.185,
+          "stat": 48.99,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD79A",
+          "effect": 6.138,
+          "stat": 48.49,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "MS4A1",
+          "effect": 5.582,
+          "stat": 46.8,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "LINC00926",
+          "effect": 5.298,
+          "stat": 41.9,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD22",
+          "effect": 5.216,
+          "stat": 40.04,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD79B",
+          "effect": 5.169,
+          "stat": 47.72,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "BANK1",
+          "effect": 4.79,
+          "stat": 41.97,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "HLA-DQA1",
+          "effect": 3.962,
+          "stat": 42.9,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD74",
+          "effect": 3.704,
+          "stat": 46.38,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "HLA-DRA",
+          "effect": 3.612,
+          "stat": 41.39,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "HLA-DQB1",
+          "effect": 3.563,
+          "stat": 41.68,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "HLA-DRB1",
+          "effect": 3.361,
+          "stat": 41.92,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "HLA-DPB1",
+          "effect": 3.169,
+          "stat": 40.05,
+          "p_adj": 1e-300
+        }
+      ],
+      "panel": {
+        "CD3D": 0.0321,
+        "CD4": 0.014,
+        "CD8A": 0.01,
+        "IL7R": 0.0435,
+        "CCR7": 0.3803,
+        "MS4A1": 2.4019,
+        "CD79A": 2.7444,
+        "CD14": 0.0271,
+        "LYZ": 0.8752,
+        "FCGR3A": 0.0176,
+        "MS4A7": 0.1356,
+        "GNLY": 0.0702,
+        "NKG7": 0.0503,
+        "FCER1A": 0.005,
+        "CST3": 0.1109,
+        "PPBP": 0.037
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "5",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 1810,
+        "pct_of_total": 17.01
+      },
+      "facts": {
+        "median_genes": 1715.5,
+        "median_umis": 6438.5,
+        "median_pct_mt": 7.77,
+        "median_doublet_score": 0.0495,
+        "pct_predicted_doublet": 0.22,
+        "genes_vs_reference": 0.85,
+        "pct_mt_minus_reference": -0.82,
+        "doublet_fraction_vs_reference": 0.06
+      },
+      "top_features": [
+        {
+          "feature": "TCF7",
+          "effect": 2.811,
+          "stat": 48.21,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD3D",
+          "effect": 2.542,
+          "stat": 42.78,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "TRAC",
+          "effect": 2.507,
+          "stat": 41.58,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD3G",
+          "effect": 2.494,
+          "stat": 42.09,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD3E",
+          "effect": 2.326,
+          "stat": 41.15,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "LDHB",
+          "effect": 2.162,
+          "stat": 50.3,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "NOSIP",
+          "effect": 2.116,
+          "stat": 40.66,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "SARAF",
+          "effect": 1.182,
+          "stat": 41.18,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "NPM1",
+          "effect": 1.156,
+          "stat": 39.25,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "TOMM7",
+          "effect": 1.048,
+          "stat": 43.0,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "EEF1B2",
+          "effect": 1.013,
+          "stat": 41.0,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "TPT1",
+          "effect": 0.759,
+          "stat": 52.75,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "EEF1A1",
+          "effect": 0.737,
+          "stat": 47.01,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "PIK3IP1",
+          "effect": 2.17,
+          "stat": 36.64,
+          "p_adj": 1.519e-291
+        },
+        {
+          "feature": "IL7R",
+          "effect": 2.416,
+          "stat": 36.54,
+          "p_adj": 5.648e-290
+        }
+      ],
+      "panel": {
+        "CD3D": 1.7651,
+        "CD4": 0.3975,
+        "CD8A": 0.0144,
+        "IL7R": 1.8904,
+        "CCR7": 0.8434,
+        "MS4A1": 0.0311,
+        "CD79A": 0.0292,
+        "CD14": 0.025,
+        "LYZ": 0.7088,
+        "FCGR3A": 0.0172,
+        "MS4A7": 0.0155,
+        "GNLY": 0.0675,
+        "NKG7": 0.0521,
+        "FCER1A": 0.005,
+        "CST3": 0.1041,
+        "PPBP": 0.0331
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "6",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 391,
+        "pct_of_total": 3.68
+      },
+      "facts": {
+        "median_genes": 1827.0,
+        "median_umis": 5310.0,
+        "median_pct_mt": 9.81,
+        "median_doublet_score": 0.0459,
+        "pct_predicted_doublet": 3.07,
+        "genes_vs_reference": 0.9,
+        "pct_mt_minus_reference": 1.22,
+        "doublet_fraction_vs_reference": 0.85
+      },
+      "top_features": [
+        {
+          "feature": "CCL5",
+          "effect": 5.06,
+          "stat": 30.05,
+          "p_adj": 3.902e-194
+        },
+        {
+          "feature": "CD8A",
+          "effect": 4.709,
+          "stat": 27.46,
+          "p_adj": 6.078e-162
+        },
+        {
+          "feature": "NKG7",
+          "effect": 4.033,
+          "stat": 24.71,
+          "p_adj": 6.287e-131
+        },
+        {
+          "feature": "IL32",
+          "effect": 3.101,
+          "stat": 24.64,
+          "p_adj": 2.664e-130
+        },
+        {
+          "feature": "CTSW",
+          "effect": 3.142,
+          "stat": 23.42,
+          "p_adj": 9.597e-118
+        },
+        {
+          "feature": "CD8B",
+          "effect": 4.591,
+          "stat": 23.33,
+          "p_adj": 6.845e-117
+        },
+        {
+          "feature": "CD3D",
+          "effect": 2.609,
+          "stat": 23.23,
+          "p_adj": 6.373e-116
+        },
+        {
+          "feature": "GZMM",
+          "effect": 2.85,
+          "stat": 23.2,
+          "p_adj": 1.233e-115
+        },
+        {
+          "feature": "B2M",
+          "effect": 0.678,
+          "stat": 22.89,
+          "p_adj": 1.421e-112
+        },
+        {
+          "feature": "TRAC",
+          "effect": 2.604,
+          "stat": 22.67,
+          "p_adj": 1.883e-110
+        },
+        {
+          "feature": "CST7",
+          "effect": 3.634,
+          "stat": 22.51,
+          "p_adj": 5.666e-109
+        },
+        {
+          "feature": "HCST",
+          "effect": 1.823,
+          "stat": 22.26,
+          "p_adj": 1.474e-106
+        },
+        {
+          "feature": "GZMA",
+          "effect": 3.467,
+          "stat": 21.18,
+          "p_adj": 2.297e-96
+        },
+        {
+          "feature": "CD3E",
+          "effect": 2.235,
+          "stat": 21.14,
+          "p_adj": 5.126e-96
+        },
+        {
+          "feature": "TRGC2",
+          "effect": 4.104,
+          "stat": 21.08,
+          "p_adj": 1.676e-95
+        }
+      ],
+      "panel": {
+        "CD3D": 2.0634,
+        "CD4": 0.0169,
+        "CD8A": 1.6004,
+        "IL7R": 1.2778,
+        "CCR7": 0.1501,
+        "MS4A1": 0.0879,
+        "CD79A": 0.0315,
+        "CD14": 0.0159,
+        "LYZ": 0.7363,
+        "FCGR3A": 0.3713,
+        "MS4A7": 0.0186,
+        "GNLY": 1.6624,
+        "NKG7": 2.5302,
+        "FCER1A": 0.0028,
+        "CST3": 0.1763,
+        "PPBP": 0.0318
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "7",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 1896,
+        "pct_of_total": 17.82
+      },
+      "facts": {
+        "median_genes": 3104.0,
+        "median_umis": 11387.5,
+        "median_pct_mt": 8.59,
+        "median_doublet_score": 0.0483,
+        "pct_predicted_doublet": 0.58,
+        "genes_vs_reference": 1.53,
+        "pct_mt_minus_reference": 0.0,
+        "doublet_fraction_vs_reference": 0.16
+      },
+      "top_features": [
+        {
+          "feature": "S100A9",
+          "effect": 5.446,
+          "stat": 52.52,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "LYZ",
+          "effect": 5.167,
+          "stat": 56.12,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "S100A8",
+          "effect": 5.043,
+          "stat": 50.39,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "FCN1",
+          "effect": 4.259,
+          "stat": 55.79,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "LGALS2",
+          "effect": 4.181,
+          "stat": 57.96,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "VCAN",
+          "effect": 4.054,
+          "stat": 52.75,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CST3",
+          "effect": 3.984,
+          "stat": 53.59,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "S100A12",
+          "effect": 3.927,
+          "stat": 50.32,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "MNDA",
+          "effect": 3.908,
+          "stat": 53.41,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CPVL",
+          "effect": 3.856,
+          "stat": 58.73,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CD14",
+          "effect": 3.807,
+          "stat": 54.79,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "CTSS",
+          "effect": 3.784,
+          "stat": 57.6,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "MS4A6A",
+          "effect": 3.77,
+          "stat": 55.75,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "FGL2",
+          "effect": 3.681,
+          "stat": 56.79,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "TYROBP",
+          "effect": 3.552,
+          "stat": 53.37,
+          "p_adj": 1e-300
+        }
+      ],
+      "panel": {
+        "CD3D": 0.0333,
+        "CD4": 0.8479,
+        "CD8A": 0.0108,
+        "IL7R": 0.0391,
+        "CCR7": 0.0018,
+        "MS4A1": 0.0379,
+        "CD79A": 0.0185,
+        "CD14": 1.9178,
+        "LYZ": 4.9463,
+        "FCGR3A": 0.142,
+        "MS4A7": 0.99,
+        "GNLY": 0.102,
+        "NKG7": 0.1335,
+        "FCER1A": 0.0929,
+        "CST3": 3.0334,
+        "PPBP": 0.0923
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "8",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 373,
+        "pct_of_total": 3.51
+      },
+      "facts": {
+        "median_genes": 1787.0,
+        "median_umis": 6983.0,
+        "median_pct_mt": 9.4,
+        "median_doublet_score": 0.0495,
+        "pct_predicted_doublet": 1.34,
+        "genes_vs_reference": 0.88,
+        "pct_mt_minus_reference": 0.81,
+        "doublet_fraction_vs_reference": 0.37
+      },
+      "top_features": [
+        {
+          "feature": "CD8B",
+          "effect": 5.668,
+          "stat": 30.27,
+          "p_adj": 5.535e-197
+        },
+        {
+          "feature": "CD8A",
+          "effect": 3.868,
+          "stat": 24.95,
+          "p_adj": 8.821e-134
+        },
+        {
+          "feature": "EEF1B2",
+          "effect": 1.149,
+          "stat": 22.86,
+          "p_adj": 1.425e-112
+        },
+        {
+          "feature": "NPM1",
+          "effect": 1.256,
+          "stat": 21.54,
+          "p_adj": 4.915e-100
+        },
+        {
+          "feature": "EEF1A1",
+          "effect": 0.676,
+          "stat": 21.41,
+          "p_adj": 7.186e-99
+        },
+        {
+          "feature": "LDHB",
+          "effect": 1.817,
+          "stat": 21.4,
+          "p_adj": 8.31e-99
+        },
+        {
+          "feature": "TCF7",
+          "effect": 2.233,
+          "stat": 20.85,
+          "p_adj": 7.755e-94
+        },
+        {
+          "feature": "CCR7",
+          "effect": 2.62,
+          "stat": 19.03,
+          "p_adj": 2.858e-78
+        },
+        {
+          "feature": "CD3G",
+          "effect": 2.106,
+          "stat": 19.02,
+          "p_adj": 3.437e-78
+        },
+        {
+          "feature": "CD3E",
+          "effect": 2.048,
+          "stat": 18.9,
+          "p_adj": 3.708e-77
+        },
+        {
+          "feature": "TRABD2A",
+          "effect": 2.617,
+          "stat": 18.73,
+          "p_adj": 9.099e-76
+        },
+        {
+          "feature": "CD3D",
+          "effect": 2.12,
+          "stat": 18.59,
+          "p_adj": 1.162e-74
+        },
+        {
+          "feature": "TPT1",
+          "effect": 0.527,
+          "stat": 18.4,
+          "p_adj": 3.66e-73
+        },
+        {
+          "feature": "SARAF",
+          "effect": 1.056,
+          "stat": 18.34,
+          "p_adj": 1.049e-72
+        },
+        {
+          "feature": "NELL2",
+          "effect": 3.385,
+          "stat": 18.22,
+          "p_adj": 9.514e-72
+        }
+      ],
+      "panel": {
+        "CD3D": 1.7933,
+        "CD4": 0.0269,
+        "CD8A": 1.2445,
+        "IL7R": 1.6221,
+        "CCR7": 1.0024,
+        "MS4A1": 0.0475,
+        "CD79A": 0.1521,
+        "CD14": 0.0186,
+        "LYZ": 0.6662,
+        "FCGR3A": 0.0172,
+        "MS4A7": 0.0144,
+        "GNLY": 0.0676,
+        "NKG7": 0.101,
+        "FCER1A": 0.0045,
+        "CST3": 0.1124,
+        "PPBP": 0.0552
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "9",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 82,
+        "pct_of_total": 0.77
+      },
+      "facts": {
+        "median_genes": 3364.5,
+        "median_umis": 12165.0,
+        "median_pct_mt": 6.0,
+        "median_doublet_score": 0.0405,
+        "pct_predicted_doublet": 14.63,
+        "genes_vs_reference": 1.66,
+        "pct_mt_minus_reference": -2.59,
+        "doublet_fraction_vs_reference": 4.06
+      },
+      "top_features": [
+        {
+          "feature": "PLD4",
+          "effect": 7.028,
+          "stat": 15.6,
+          "p_adj": 3.626e-51
+        },
+        {
+          "feature": "UGCG",
+          "effect": 6.513,
+          "stat": 15.61,
+          "p_adj": 3.626e-51
+        },
+        {
+          "feature": "CCDC50",
+          "effect": 6.223,
+          "stat": 15.61,
+          "p_adj": 3.626e-51
+        },
+        {
+          "feature": "IRF8",
+          "effect": 5.52,
+          "stat": 15.6,
+          "p_adj": 3.626e-51
+        },
+        {
+          "feature": "TCF4",
+          "effect": 6.153,
+          "stat": 15.58,
+          "p_adj": 3.931e-51
+        },
+        {
+          "feature": "JCHAIN",
+          "effect": 7.615,
+          "stat": 15.55,
+          "p_adj": 5.446e-51
+        },
+        {
+          "feature": "LILRA4",
+          "effect": 10.297,
+          "stat": 15.42,
+          "p_adj": 3.199e-50
+        },
+        {
+          "feature": "SERPINF1",
+          "effect": 8.138,
+          "stat": 15.41,
+          "p_adj": 3.256e-50
+        },
+        {
+          "feature": "IL3RA",
+          "effect": 7.843,
+          "stat": 15.4,
+          "p_adj": 3.256e-50
+        },
+        {
+          "feature": "SEC61B",
+          "effect": 3.112,
+          "stat": 15.4,
+          "p_adj": 3.256e-50
+        },
+        {
+          "feature": "APP",
+          "effect": 4.825,
+          "stat": 15.38,
+          "p_adj": 4.32e-50
+        },
+        {
+          "feature": "ITM2C",
+          "effect": 6.667,
+          "stat": 15.36,
+          "p_adj": 4.968e-50
+        },
+        {
+          "feature": "IRF7",
+          "effect": 5.815,
+          "stat": 15.35,
+          "p_adj": 5.433e-50
+        },
+        {
+          "feature": "HSP90B1",
+          "effect": 3.317,
+          "stat": 15.33,
+          "p_adj": 7.094e-50
+        },
+        {
+          "feature": "GZMB",
+          "effect": 7.029,
+          "stat": 15.32,
+          "p_adj": 7.69e-50
+        }
+      ],
+      "panel": {
+        "CD3D": 0.0695,
+        "CD4": 1.1554,
+        "CD8A": 0.0049,
+        "IL7R": 0.0621,
+        "CCR7": 0.0591,
+        "MS4A1": 0.1389,
+        "CD79A": 0.2205,
+        "CD14": 0.0968,
+        "LYZ": 0.8058,
+        "FCGR3A": 0.0327,
+        "MS4A7": 0.0598,
+        "GNLY": 0.2495,
+        "NKG7": 0.2649,
+        "FCER1A": 0.5847,
+        "CST3": 2.7975,
+        "PPBP": 0.1243
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "10",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 723,
+        "pct_of_total": 6.8
+      },
+      "facts": {
+        "median_genes": 1823.0,
+        "median_umis": 5951.0,
+        "median_pct_mt": 11.28,
+        "median_doublet_score": 0.0168,
+        "pct_predicted_doublet": 1.8,
+        "genes_vs_reference": 0.9,
+        "pct_mt_minus_reference": 2.69,
+        "doublet_fraction_vs_reference": 0.5
+      },
+      "top_features": [
+        {
+          "feature": "KLRB1",
+          "effect": 5.299,
+          "stat": 41.48,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "GZMK",
+          "effect": 5.297,
+          "stat": 39.34,
+          "p_adj": 1e-300
+        },
+        {
+          "feature": "NKG7",
+          "effect": 4.407,
+          "stat": 36.65,
+          "p_adj": 2.908e-290
+        },
+        {
+          "feature": "GZMA",
+          "effect": 4.198,
+          "stat": 36.4,
+          "p_adj": 1.868e-286
+        },
+        {
+          "feature": "KLRG1",
+          "effect": 3.931,
+          "stat": 36.4,
+          "p_adj": 1.868e-286
+        },
+        {
+          "feature": "IL32",
+          "effect": 3.319,
+          "stat": 35.38,
+          "p_adj": 1.285e-270
+        },
+        {
+          "feature": "CCL5",
+          "effect": 4.057,
+          "stat": 34.75,
+          "p_adj": 3.637e-261
+        },
+        {
+          "feature": "CTSW",
+          "effect": 3.264,
+          "stat": 33.72,
+          "p_adj": 7.45e-246
+        },
+        {
+          "feature": "LYAR",
+          "effect": 3.007,
+          "stat": 32.13,
+          "p_adj": 3.671e-223
+        },
+        {
+          "feature": "CST7",
+          "effect": 3.421,
+          "stat": 31.98,
+          "p_adj": 4.509e-221
+        },
+        {
+          "feature": "IL7R",
+          "effect": 3.063,
+          "stat": 31.09,
+          "p_adj": 5.079e-209
+        },
+        {
+          "feature": "HCST",
+          "effect": 1.767,
+          "stat": 30.21,
+          "p_adj": 2.726e-197
+        },
+        {
+          "feature": "RORA",
+          "effect": 2.751,
+          "stat": 29.8,
+          "p_adj": 5.882e-192
+        },
+        {
+          "feature": "TRGC2",
+          "effect": 4.071,
+          "stat": 29.55,
+          "p_adj": 7.577e-189
+        },
+        {
+          "feature": "PRF1",
+          "effect": 3.102,
+          "stat": 28.74,
+          "p_adj": 1.174e-178
+        }
+      ],
+      "panel": {
+        "CD3D": 1.8078,
+        "CD4": 0.0279,
+        "CD8A": 0.7238,
+        "IL7R": 2.4331,
+        "CCR7": 0.0612,
+        "MS4A1": 0.0715,
+        "CD79A": 0.0184,
+        "CD14": 0.0248,
+        "LYZ": 0.7865,
+        "FCGR3A": 0.0641,
+        "MS4A7": 0.0253,
+        "GNLY": 0.931,
+        "NKG7": 2.6001,
+        "FCER1A": 0.0014,
+        "CST3": 0.1126,
+        "PPBP": 0.0525
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "11",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 355,
+        "pct_of_total": 3.34
+      },
+      "facts": {
+        "median_genes": 3108.0,
+        "median_umis": 11969.0,
+        "median_pct_mt": 9.89,
+        "median_doublet_score": 0.0104,
+        "pct_predicted_doublet": 9.58,
+        "genes_vs_reference": 1.53,
+        "pct_mt_minus_reference": 1.3,
+        "doublet_fraction_vs_reference": 2.66
+      },
+      "top_features": [
+        {
+          "feature": "LST1",
+          "effect": 4.467,
+          "stat": 31.87,
+          "p_adj": 1.547e-218
+        },
+        {
+          "feature": "FCGR3A",
+          "effect": 6.676,
+          "stat": 31.61,
+          "p_adj": 2.773e-215
+        },
+        {
+          "feature": "SMIM25",
+          "effect": 5.041,
+          "stat": 31.11,
+          "p_adj": 1.187e-208
+        },
+        {
+          "feature": "AIF1",
+          "effect": 4.069,
+          "stat": 31.01,
+          "p_adj": 1.793e-207
+        },
+        {
+          "feature": "COTL1",
+          "effect": 3.042,
+          "stat": 30.42,
+          "p_adj": 1.061e-199
+        },
+        {
+          "feature": "FCER1G",
+          "effect": 3.667,
+          "stat": 30.15,
+          "p_adj": 3.347e-196
+        },
+        {
+          "feature": "CDKN1C",
+          "effect": 7.723,
+          "stat": 30.07,
+          "p_adj": 3.139e-195
+        },
+        {
+          "feature": "TCF7L2",
+          "effect": 5.199,
+          "stat": 30.01,
+          "p_adj": 1.996e-194
+        },
+        {
+          "feature": "SAT1",
+          "effect": 3.097,
+          "stat": 29.98,
+          "p_adj": 3.798e-194
+        },
+        {
+          "feature": "MS4A7",
+          "effect": 4.514,
+          "stat": 29.96,
+          "p_adj": 6.672e-194
+        },
+        {
+          "feature": "LYN",
+          "effect": 3.16,
+          "stat": 29.3,
+          "p_adj": 1.878e-185
+        },
+        {
+          "feature": "RHOC",
+          "effect": 4.128,
+          "stat": 28.72,
+          "p_adj": 3.963e-178
+        },
+        {
+          "feature": "LRRC25",
+          "effect": 3.599,
+          "stat": 28.47,
+          "p_adj": 4.117e-175
+        },
+        {
+          "feature": "TNFRSF1B",
+          "effect": 3.019,
+          "stat": 28.3,
+          "p_adj": 4.648e-173
+        },
+        {
+          "feature": "FTL",
+          "effect": 2.608,
+          "stat": 27.91,
+          "p_adj": 3.055e-168
+        }
+      ],
+      "panel": {
+        "CD3D": 0.0654,
+        "CD4": 0.6653,
+        "CD8A": 0.0306,
+        "IL7R": 0.0831,
+        "CCR7": 0.0179,
+        "MS4A1": 0.0737,
+        "CD79A": 0.0685,
+        "CD14": 0.2448,
+        "LYZ": 2.5003,
+        "FCGR3A": 2.9466,
+        "MS4A7": 2.2679,
+        "GNLY": 0.1296,
+        "NKG7": 0.3471,
+        "FCER1A": 0.0097,
+        "CST3": 3.07,
+        "PPBP": 0.0714
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "12",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 200,
+        "pct_of_total": 1.88
+      },
+      "facts": {
+        "median_genes": 559.0,
+        "median_umis": 1409.5,
+        "median_pct_mt": 8.42,
+        "median_doublet_score": 0.0248,
+        "pct_predicted_doublet": 7.5,
+        "genes_vs_reference": 0.28,
+        "pct_mt_minus_reference": -0.17,
+        "doublet_fraction_vs_reference": 2.08
+      },
+      "top_features": [
+        {
+          "feature": "PF4",
+          "effect": 11.803,
+          "stat": 24.25,
+          "p_adj": 5.886e-126
+        },
+        {
+          "feature": "PPBP",
+          "effect": 11.798,
+          "stat": 24.24,
+          "p_adj": 5.886e-126
+        },
+        {
+          "feature": "NRGN",
+          "effect": 8.365,
+          "stat": 24.24,
+          "p_adj": 5.886e-126
+        },
+        {
+          "feature": "CAVIN2",
+          "effect": 11.259,
+          "stat": 24.13,
+          "p_adj": 6.619e-125
+        },
+        {
+          "feature": "TUBB1",
+          "effect": 11.363,
+          "stat": 23.88,
+          "p_adj": 1.854e-122
+        },
+        {
+          "feature": "GNG11",
+          "effect": 11.083,
+          "stat": 23.76,
+          "p_adj": 3.202e-121
+        },
+        {
+          "feature": "CLU",
+          "effect": 10.476,
+          "stat": 22.89,
+          "p_adj": 1.654e-112
+        },
+        {
+          "feature": "TAGLN2",
+          "effect": 4.384,
+          "stat": 22.63,
+          "p_adj": 5.855e-110
+        },
+        {
+          "feature": "HIST1H2AC",
+          "effect": 7.718,
+          "stat": 22.4,
+          "p_adj": 7.949e-108
+        },
+        {
+          "feature": "OAZ1",
+          "effect": 3.09,
+          "stat": 22.08,
+          "p_adj": 1.018e-104
+        },
+        {
+          "feature": "CCL5",
+          "effect": 5.816,
+          "stat": 21.92,
+          "p_adj": 3.152e-103
+        },
+        {
+          "feature": "SPARC",
+          "effect": 9.266,
+          "stat": 21.51,
+          "p_adj": 1.895e-99
+        },
+        {
+          "feature": "ITGA2B",
+          "effect": 11.124,
+          "stat": 21.44,
+          "p_adj": 8.082e-99
+        },
+        {
+          "feature": "GNAS",
+          "effect": 2.793,
+          "stat": 21.28,
+          "p_adj": 2.526e-97
+        },
+        {
+          "feature": "GP9",
+          "effect": 11.825,
+          "stat": 21.21,
+          "p_adj": 1.099e-96
+        }
+      ],
+      "panel": {
+        "CD3D": 0.1891,
+        "CD4": 0.1276,
+        "CD8A": 0.022,
+        "IL7R": 0.2586,
+        "CCR7": 0.0875,
+        "MS4A1": 0.1125,
+        "CD79A": 0.0847,
+        "CD14": 0.2311,
+        "LYZ": 1.7455,
+        "FCGR3A": 0.0743,
+        "MS4A7": 0.1727,
+        "GNLY": 0.1633,
+        "NKG7": 0.1283,
+        "FCER1A": 0.0334,
+        "CST3": 1.9524,
+        "PPBP": 5.4012
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "13",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 139,
+        "pct_of_total": 1.31
+      },
+      "facts": {
+        "median_genes": 2913.0,
+        "median_umis": 10474.0,
+        "median_pct_mt": 8.51,
+        "median_doublet_score": 0.0426,
+        "pct_predicted_doublet": 3.6,
+        "genes_vs_reference": 1.43,
+        "pct_mt_minus_reference": -0.08,
+        "doublet_fraction_vs_reference": 1.0
+      },
+      "top_features": [
+        {
+          "feature": "TYMP",
+          "effect": 3.259,
+          "stat": 17.2,
+          "p_adj": 5.099e-62
+        },
+        {
+          "feature": "MNDA",
+          "effect": 3.438,
+          "stat": 15.51,
+          "p_adj": 2.832e-50
+        },
+        {
+          "feature": "MX1",
+          "effect": 3.945,
+          "stat": 15.38,
+          "p_adj": 1.604e-49
+        },
+        {
+          "feature": "TNFSF13B",
+          "effect": 2.892,
+          "stat": 15.23,
+          "p_adj": 1.102e-48
+        },
+        {
+          "feature": "MX2",
+          "effect": 3.235,
+          "stat": 15.17,
+          "p_adj": 2.303e-48
+        },
+        {
+          "feature": "FOS",
+          "effect": 2.38,
+          "stat": 15.09,
+          "p_adj": 6.662e-48
+        },
+        {
+          "feature": "FGL2",
+          "effect": 2.976,
+          "stat": 15.06,
+          "p_adj": 7.943e-48
+        },
+        {
+          "feature": "CTSS",
+          "effect": 3.134,
+          "stat": 15.02,
+          "p_adj": 1.472e-47
+        },
+        {
+          "feature": "DUSP1",
+          "effect": 2.328,
+          "stat": 14.83,
+          "p_adj": 2.18e-46
+        },
+        {
+          "feature": "CD14",
+          "effect": 3.019,
+          "stat": 14.68,
+          "p_adj": 1.873e-45
+        },
+        {
+          "feature": "NEAT1",
+          "effect": 2.41,
+          "stat": 14.64,
+          "p_adj": 3.054e-45
+        },
+        {
+          "feature": "MS4A6A",
+          "effect": 2.956,
+          "stat": 14.55,
+          "p_adj": 1.034e-44
+        },
+        {
+          "feature": "MPEG1",
+          "effect": 2.672,
+          "stat": 14.53,
+          "p_adj": 1.156e-44
+        },
+        {
+          "feature": "FCN1",
+          "effect": 3.417,
+          "stat": 14.53,
+          "p_adj": 1.181e-44
+        },
+        {
+          "feature": "TNFSF10",
+          "effect": 2.572,
+          "stat": 14.5,
+          "p_adj": 1.698e-44
+        }
+      ],
+      "panel": {
+        "CD3D": 0.0613,
+        "CD4": 0.7045,
+        "CD8A": 0.0228,
+        "IL7R": 0.085,
+        "CCR7": 0.0039,
+        "MS4A1": 0.0399,
+        "CD79A": 0.0249,
+        "CD14": 2.0519,
+        "LYZ": 4.9924,
+        "FCGR3A": 0.168,
+        "MS4A7": 1.0283,
+        "GNLY": 0.0718,
+        "NKG7": 0.1172,
+        "FCER1A": 0.0828,
+        "CST3": 3.0491,
+        "PPBP": 0.0639
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "14",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 588,
+        "pct_of_total": 5.53
+      },
+      "facts": {
+        "median_genes": 1917.0,
+        "median_umis": 6969.5,
+        "median_pct_mt": 9.59,
+        "median_doublet_score": 0.0241,
+        "pct_predicted_doublet": 19.9,
+        "genes_vs_reference": 0.94,
+        "pct_mt_minus_reference": 1.0,
+        "doublet_fraction_vs_reference": 5.53
+      },
+      "top_features": [
+        {
+          "feature": "MS4A1",
+          "effect": 4.697,
+          "stat": 35.04,
+          "p_adj": 1.152e-264
+        },
+        {
+          "feature": "CD79A",
+          "effect": 4.778,
+          "stat": 34.89,
+          "p_adj": 9.909e-263
+        },
+        {
+          "feature": "BANK1",
+          "effect": 4.368,
+          "stat": 34.11,
+          "p_adj": 3.06e-251
+        },
+        {
+          "feature": "CD79B",
+          "effect": 3.571,
+          "stat": 31.74,
+          "p_adj": 1.882e-217
+        },
+        {
+          "feature": "CD37",
+          "effect": 1.897,
+          "stat": 31.49,
+          "p_adj": 4.104e-214
+        },
+        {
+          "feature": "CD74",
+          "effect": 3.086,
+          "stat": 31.35,
+          "p_adj": 2.95e-212
+        },
+        {
+          "feature": "HLA-DQA1",
+          "effect": 3.292,
+          "stat": 31.13,
+          "p_adj": 2.683e-209
+        },
+        {
+          "feature": "RALGPS2",
+          "effect": 3.712,
+          "stat": 29.73,
+          "p_adj": 7.755e-191
+        },
+        {
+          "feature": "TNFRSF13C",
+          "effect": 3.857,
+          "stat": 29.57,
+          "p_adj": 7.17e-189
+        },
+        {
+          "feature": "HLA-DPB1",
+          "effect": 2.825,
+          "stat": 29.1,
+          "p_adj": 6.452e-183
+        },
+        {
+          "feature": "HLA-DQB1",
+          "effect": 2.889,
+          "stat": 28.93,
+          "p_adj": 8.596e-181
+        },
+        {
+          "feature": "LINC00926",
+          "effect": 3.665,
+          "stat": 28.9,
+          "p_adj": 1.895e-180
+        },
+        {
+          "feature": "BLK",
+          "effect": 4.042,
+          "stat": 27.8,
+          "p_adj": 6.605e-167
+        },
+        {
+          "feature": "HLA-DPA1",
+          "effect": 2.758,
+          "stat": 27.8,
+          "p_adj": 6.605e-167
+        },
+        {
+          "feature": "HLA-DRA",
+          "effect": 3.058,
+          "stat": 27.68,
+          "p_adj": 1.663e-165
+        }
+      ],
+      "panel": {
+        "CD3D": 0.2596,
+        "CD4": 0.0477,
+        "CD8A": 0.0622,
+        "IL7R": 0.3317,
+        "CCR7": 0.2827,
+        "MS4A1": 2.2258,
+        "CD79A": 2.3553,
+        "CD14": 0.032,
+        "LYZ": 0.7221,
+        "FCGR3A": 0.0538,
+        "MS4A7": 0.0995,
+        "GNLY": 0.2186,
+        "NKG7": 0.2129,
+        "FCER1A": 0.0061,
+        "CST3": 0.0846,
+        "PPBP": 0.0444
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "15",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 146,
+        "pct_of_total": 1.37
+      },
+      "facts": {
+        "median_genes": 1664.0,
+        "median_umis": 4744.5,
+        "median_pct_mt": 7.68,
+        "median_doublet_score": 0.0187,
+        "pct_predicted_doublet": 0.0,
+        "genes_vs_reference": 0.82,
+        "pct_mt_minus_reference": -0.91,
+        "doublet_fraction_vs_reference": 0.0
+      },
+      "top_features": [
+        {
+          "feature": "SYNE2",
+          "effect": 2.871,
+          "stat": 11.79,
+          "p_adj": 1.844e-28
+        },
+        {
+          "feature": "EVL",
+          "effect": 1.69,
+          "stat": 11.56,
+          "p_adj": 2.176e-27
+        },
+        {
+          "feature": "IL32",
+          "effect": 2.506,
+          "stat": 11.17,
+          "p_adj": 1.391e-25
+        },
+        {
+          "feature": "AES",
+          "effect": 1.22,
+          "stat": 10.46,
+          "p_adj": 2.397e-22
+        },
+        {
+          "feature": "PCSK7",
+          "effect": 1.589,
+          "stat": 9.52,
+          "p_adj": 1.775e-18
+        },
+        {
+          "feature": "CD2",
+          "effect": 2.034,
+          "stat": 9.35,
+          "p_adj": 7.925e-18
+        },
+        {
+          "feature": "TRAC",
+          "effect": 1.828,
+          "stat": 9.12,
+          "p_adj": 5.161e-17
+        },
+        {
+          "feature": "NKTR",
+          "effect": 1.729,
+          "stat": 9.1,
+          "p_adj": 6.038e-17
+        },
+        {
+          "feature": "ARL4C",
+          "effect": 1.598,
+          "stat": 8.6,
+          "p_adj": 3.612e-15
+        },
+        {
+          "feature": "ACAP1",
+          "effect": 1.43,
+          "stat": 8.21,
+          "p_adj": 7.956e-14
+        },
+        {
+          "feature": "OPTN",
+          "effect": 2.246,
+          "stat": 8.13,
+          "p_adj": 1.477e-13
+        },
+        {
+          "feature": "ETS1",
+          "effect": 1.518,
+          "stat": 7.95,
+          "p_adj": 6.008e-13
+        },
+        {
+          "feature": "LCK",
+          "effect": 1.503,
+          "stat": 7.88,
+          "p_adj": 9.569e-13
+        },
+        {
+          "feature": "TRBC2",
+          "effect": 1.695,
+          "stat": 7.81,
+          "p_adj": 1.615e-12
+        },
+        {
+          "feature": "FOXP3",
+          "effect": 6.841,
+          "stat": 7.59,
+          "p_adj": 8.161e-12
+        }
+      ],
+      "panel": {
+        "CD3D": 1.4293,
+        "CD4": 0.4286,
+        "CD8A": 0.077,
+        "IL7R": 1.0561,
+        "CCR7": 0.2708,
+        "MS4A1": 0.0601,
+        "CD79A": 0.0762,
+        "CD14": 0.0395,
+        "LYZ": 0.8763,
+        "FCGR3A": 0.0224,
+        "MS4A7": 0.0147,
+        "GNLY": 0.1802,
+        "NKG7": 0.2246,
+        "FCER1A": 0.0,
+        "CST3": 0.1761,
+        "PPBP": 0.0302
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "16",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 65,
+        "pct_of_total": 0.61
+      },
+      "facts": {
+        "median_genes": 3583.0,
+        "median_umis": 14510.0,
+        "median_pct_mt": 9.22,
+        "median_doublet_score": 0.3744,
+        "pct_predicted_doublet": 90.77,
+        "genes_vs_reference": 1.77,
+        "pct_mt_minus_reference": 0.63,
+        "doublet_fraction_vs_reference": 25.21
+      },
+      "top_features": [
+        {
+          "feature": "MS4A1",
+          "effect": 3.225,
+          "stat": 10.51,
+          "p_adj": 1.535e-21
+        },
+        {
+          "feature": "CD79A",
+          "effect": 2.767,
+          "stat": 10.02,
+          "p_adj": 1.229e-19
+        },
+        {
+          "feature": "IGHM",
+          "effect": 3.548,
+          "stat": 9.93,
+          "p_adj": 2.09e-19
+        },
+        {
+          "feature": "RALGPS2",
+          "effect": 2.562,
+          "stat": 9.6,
+          "p_adj": 3.927e-18
+        },
+        {
+          "feature": "CD79B",
+          "effect": 2.426,
+          "stat": 9.36,
+          "p_adj": 3.248e-17
+        },
+        {
+          "feature": "IGKC",
+          "effect": 3.608,
+          "stat": 8.95,
+          "p_adj": 1.143e-15
+        },
+        {
+          "feature": "BANK1",
+          "effect": 2.452,
+          "stat": 8.69,
+          "p_adj": 1.085e-14
+        },
+        {
+          "feature": "TCL1A",
+          "effect": 2.78,
+          "stat": 8.46,
+          "p_adj": 6.816e-14
+        },
+        {
+          "feature": "MPEG1",
+          "effect": 2.232,
+          "stat": 8.44,
+          "p_adj": 6.914e-14
+        },
+        {
+          "feature": "S100A8",
+          "effect": 4.003,
+          "stat": 8.4,
+          "p_adj": 8.783e-14
+        },
+        {
+          "feature": "MEF2C",
+          "effect": 1.974,
+          "stat": 8.37,
+          "p_adj": 1.063e-13
+        },
+        {
+          "feature": "LINC00926",
+          "effect": 2.4,
+          "stat": 8.34,
+          "p_adj": 1.216e-13
+        },
+        {
+          "feature": "IGHD",
+          "effect": 2.661,
+          "stat": 8.32,
+          "p_adj": 1.332e-13
+        },
+        {
+          "feature": "HLA-DQA1",
+          "effect": 2.086,
+          "stat": 8.28,
+          "p_adj": 1.811e-13
+        },
+        {
+          "feature": "S100A9",
+          "effect": 4.19,
+          "stat": 8.24,
+          "p_adj": 2.397e-13
+        }
+      ],
+      "panel": {
+        "CD3D": 0.0467,
+        "CD4": 0.4455,
+        "CD8A": 0.0273,
+        "IL7R": 0.0804,
+        "CCR7": 0.1904,
+        "MS4A1": 1.6627,
+        "CD79A": 1.4828,
+        "CD14": 1.6213,
+        "LYZ": 4.6171,
+        "FCGR3A": 0.0918,
+        "MS4A7": 0.7364,
+        "GNLY": 0.0646,
+        "NKG7": 0.1014,
+        "FCER1A": 0.0971,
+        "CST3": 2.5733,
+        "PPBP": 0.0817
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "17",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 26,
+        "pct_of_total": 0.24
+      },
+      "facts": {
+        "median_genes": 4028.0,
+        "median_umis": 18906.5,
+        "median_pct_mt": 7.98,
+        "median_doublet_score": 0.1199,
+        "pct_predicted_doublet": 15.38,
+        "genes_vs_reference": 1.98,
+        "pct_mt_minus_reference": -0.61,
+        "doublet_fraction_vs_reference": 4.27
+      },
+      "top_features": [
+        {
+          "feature": "CD34",
+          "effect": 10.753,
+          "stat": 8.47,
+          "p_adj": 1.918e-13
+        },
+        {
+          "feature": "PRSS57",
+          "effect": 8.712,
+          "stat": 8.45,
+          "p_adj": 1.918e-13
+        },
+        {
+          "feature": "SOX4",
+          "effect": 5.113,
+          "stat": 8.5,
+          "p_adj": 1.918e-13
+        },
+        {
+          "feature": "CDK6",
+          "effect": 5.283,
+          "stat": 8.32,
+          "p_adj": 3.657e-13
+        },
+        {
+          "feature": "CYTL1",
+          "effect": 9.969,
+          "stat": 8.13,
+          "p_adj": 9.669e-13
+        },
+        {
+          "feature": "NPM1",
+          "effect": 1.945,
+          "stat": 8.09,
+          "p_adj": 1.128e-12
+        },
+        {
+          "feature": "EBPL",
+          "effect": 3.215,
+          "stat": 8.02,
+          "p_adj": 1.77e-12
+        },
+        {
+          "feature": "LAPTM4B",
+          "effect": 6.105,
+          "stat": 7.97,
+          "p_adj": 2.427e-12
+        },
+        {
+          "feature": "ZFAS1",
+          "effect": 2.291,
+          "stat": 7.94,
+          "p_adj": 2.68e-12
+        },
+        {
+          "feature": "STMN1",
+          "effect": 4.291,
+          "stat": 7.88,
+          "p_adj": 3.789e-12
+        },
+        {
+          "feature": "HSP90AB1",
+          "effect": 2.139,
+          "stat": 7.8,
+          "p_adj": 6.4e-12
+        },
+        {
+          "feature": "AC084033.3",
+          "effect": 5.926,
+          "stat": 7.67,
+          "p_adj": 1.601e-11
+        },
+        {
+          "feature": "HNRNPA1",
+          "effect": 1.609,
+          "stat": 7.6,
+          "p_adj": 2.567e-11
+        },
+        {
+          "feature": "RACK1",
+          "effect": 1.131,
+          "stat": 7.54,
+          "p_adj": 4.044e-11
+        },
+        {
+          "feature": "MSI2",
+          "effect": 3.646,
+          "stat": 7.46,
+          "p_adj": 6.958e-11
+        }
+      ],
+      "panel": {
+        "CD3D": 0.091,
+        "CD4": 0.0,
+        "CD8A": 0.0755,
+        "IL7R": 0.1136,
+        "CCR7": 0.1065,
+        "MS4A1": 0.1175,
+        "CD79A": 0.1862,
+        "CD14": 0.0,
+        "LYZ": 0.7136,
+        "FCGR3A": 0.015,
+        "MS4A7": 0.0543,
+        "GNLY": 0.015,
+        "NKG7": 0.1262,
+        "FCER1A": 0.5663,
+        "CST3": 0.7264,
+        "PPBP": 0.0
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    },
+    {
+      "unit_id": "18",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 211,
+        "pct_of_total": 1.98
+      },
+      "facts": {
+        "median_genes": 3950.0,
+        "median_umis": 16082.0,
+        "median_pct_mt": 8.85,
+        "median_doublet_score": 0.3744,
+        "pct_predicted_doublet": 91.0,
+        "genes_vs_reference": 1.95,
+        "pct_mt_minus_reference": 0.26,
+        "doublet_fraction_vs_reference": 25.28
+      },
+      "top_features": [
+        {
+          "feature": "S100A9",
+          "effect": 4.247,
+          "stat": 15.25,
+          "p_adj": 3.283e-48
+        },
+        {
+          "feature": "S100A8",
+          "effect": 3.973,
+          "stat": 15.07,
+          "p_adj": 2.605e-47
+        },
+        {
+          "feature": "S100A12",
+          "effect": 2.952,
+          "stat": 15.03,
+          "p_adj": 2.937e-47
+        },
+        {
+          "feature": "AC020656.1",
+          "effect": 2.186,
+          "stat": 14.45,
+          "p_adj": 1.175e-43
+        },
+        {
+          "feature": "VCAN",
+          "effect": 2.787,
+          "stat": 14.42,
+          "p_adj": 1.66e-43
+        },
+        {
+          "feature": "CD14",
+          "effect": 2.298,
+          "stat": 14.3,
+          "p_adj": 6.988e-43
+        },
+        {
+          "feature": "KLF4",
+          "effect": 2.004,
+          "stat": 13.87,
+          "p_adj": 2.889e-40
+        },
+        {
+          "feature": "CSF3R",
+          "effect": 1.955,
+          "stat": 13.83,
+          "p_adj": 4.388e-40
+        },
+        {
+          "feature": "RGS2",
+          "effect": 1.964,
+          "stat": 13.8,
+          "p_adj": 5.581e-40
+        },
+        {
+          "feature": "CEBPD",
+          "effect": 1.992,
+          "stat": 13.68,
+          "p_adj": 2.79e-39
+        },
+        {
+          "feature": "CD36",
+          "effect": 2.011,
+          "stat": 13.56,
+          "p_adj": 1.294e-38
+        },
+        {
+          "feature": "FOS",
+          "effect": 1.783,
+          "stat": 13.42,
+          "p_adj": 7.372e-38
+        },
+        {
+          "feature": "PLBD1",
+          "effect": 1.858,
+          "stat": 13.41,
+          "p_adj": 7.857e-38
+        },
+        {
+          "feature": "FCN1",
+          "effect": 2.777,
+          "stat": 13.24,
+          "p_adj": 7.423e-37
+        },
+        {
+          "feature": "MNDA",
+          "effect": 2.504,
+          "stat": 13.19,
+          "p_adj": 1.308e-36
+        }
+      ],
+      "panel": {
+        "CD3D": 0.8825,
+        "CD4": 0.6867,
+        "CD8A": 0.211,
+        "IL7R": 1.1751,
+        "CCR7": 0.1998,
+        "MS4A1": 0.0611,
+        "CD79A": 0.0214,
+        "CD14": 1.6301,
+        "LYZ": 4.5728,
+        "FCGR3A": 0.2008,
+        "MS4A7": 0.6929,
+        "GNLY": 0.6923,
+        "NKG7": 0.8267,
+        "FCER1A": 0.0543,
+        "CST3": 2.5004,
+        "PPBP": 0.0695
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": null,
+        "rule": "adj. p < 0.05 and logFC > 0, ranked by adj. p then logFC, top 15"
+      }
+    }
+  ]
+}
