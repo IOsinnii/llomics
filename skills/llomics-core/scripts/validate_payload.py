@@ -23,6 +23,8 @@ REQUIRED_CHECKS: dict[str, list[str]] = {
     "clusters": ["pseudoreplication", "doublet_detection", "cluster_stability", "batch_integration"],
     "pca": ["scaling_declared", "technical_covariate_association", "outlier_influence", "component_selection"],
     "limma": ["replicates", "pvalue_distribution", "batch_confounding", "multiple_testing", "mean_variance"],
+    # two-group differential tests from other tools (scanpy rank_genes_groups with a reference, Seurat FindMarkers)
+    "dge": ["replicates", "pvalue_distribution", "batch_confounding", "multiple_testing", "mean_variance"],
     "glm": ["convergence", "separation", "overdispersion", "collinearity", "events_per_variable"],
     "lasso": ["nested_cv", "leakage", "selection_stability", "null_comparison"],
     "plsda": ["permutation_test", "cv_performance", "overfit_gap", "leakage", "ncomp_selection"],
