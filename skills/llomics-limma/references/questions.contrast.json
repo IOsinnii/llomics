@@ -1,0 +1,58 @@
+{
+  "_note": "Starter questions and gates for one limma contrast. Written for human or mouse transcriptomics: edit the option descriptions, and the gene names in them, for other organisms or data types. Thresholds are design choices, not tuned values.",
+  "unit_type": "contrast",
+  "questions": [
+    {
+      "id": "dominant_signal",
+      "shape": "choice",
+      "text": "Which description best fits the top up- and down-regulated features of this contrast, given the comparison in `unit.definition`?",
+      "options": {
+        "response to the comparison": "The features are what the comparison in `unit.definition` would plausibly change, or they form a coherent biological response to it.",
+        "sex difference": "The list is dominated by sex-linked genes such as XIST, RPS4Y1, DDX3Y, KDM5D, or UTY.",
+        "sample handling or stress": "The list is dominated by immediate-early, heat-shock, or hypoxia genes such as FOS, JUN, EGR1, or HSPA1A.",
+        "cell-type composition": "The list is dominated by marker genes of one cell type, which suggests the groups differ in which cells are present.",
+        "no recognisable pattern": "The features share no program, or the identifiers cannot be recognised."
+      }
+    },
+    {
+      "id": "up_is_one_program",
+      "shape": "bool",
+      "text": "Do the features in `unit.top_features.up` belong to one recognisable biological program or pathway?"
+    },
+    {
+      "id": "up_program_label",
+      "shape": "text",
+      "text": "Name the program of the up-regulated features in at most six words. Answer 'none' if there is no single program."
+    },
+    {
+      "id": "down_is_one_program",
+      "shape": "bool",
+      "text": "Do the features in `unit.top_features.down` belong to one recognisable biological program or pathway?"
+    },
+    {
+      "id": "down_program_label",
+      "shape": "text",
+      "text": "Name the program of the down-regulated features in at most six words. Answer 'none' if there is no single program."
+    },
+    {
+      "id": "evidence",
+      "shape": "text",
+      "text": "In one or two sentences, name the features from this unit that your answers rest on."
+    }
+  ],
+  "gates": {
+    "blocking_checks": ["replicates", "pvalue_distribution", "batch_confounding"],
+    "blocking_statuses": ["fail", "not_run"],
+    "facts": [
+      {"fact": "n_hits", "op": "<", "value": 10, "reason": "too_few_hits"}
+    ],
+    "judgments": [
+      {
+        "question": "dominant_signal",
+        "accept": ["response to the comparison"],
+        "min_share": 0.8,
+        "reason": "signal_is_not_the_comparison"
+      }
+    ]
+  }
+}
