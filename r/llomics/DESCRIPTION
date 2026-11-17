@@ -1,0 +1,13 @@
+Package: llomics
+Title: Turn Omics Pipeline Results into Payloads for LLMs
+Version: 0.1.0
+Description: Builds small, self-describing JSON payloads from the results of
+    statistical steps in omics pipelines (limma fits, Seurat marker tests, or
+    any differential-analysis table), following the llomics contract. Each
+    payload carries a run card, trust checks and one state per unit of
+    judgment.
+Encoding: UTF-8
+Depends: R (>= 4.1)
+Imports: jsonlite, stats, utils
+Suggests: limma, Seurat, testthat (>= 3.0.0)
+Config/testthat/edition: 3

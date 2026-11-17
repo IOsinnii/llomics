@@ -23,6 +23,7 @@ COPIES = {
     ],
     "python/llomics/validate.py": [
         "skills/llomics-core/scripts/validate_payload.py",
+        "r/llomics/inst/validate_payload.py",
     ],
 }
 

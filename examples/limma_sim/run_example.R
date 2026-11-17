@@ -1,4 +1,5 @@
-# Smoke test for the limma extractor on simulated data. Run from the repository root:
+# Smoke test for the limma adapter on simulated data. Install the R package first
+# (R CMD INSTALL r/llomics), then run from the repository root:
 #
 #   Rscript examples/limma_sim/run_example.R [out_dir]
 #
@@ -7,7 +8,7 @@
 # (default: examples/limma_sim/out).
 
 suppressPackageStartupMessages(library(limma))
-source("skills/llomics-limma/scripts/llomics_limma.R")
+library(llomics)
 
 args <- commandArgs(trailingOnly = TRUE)
 out_dir <- if (length(args)) args[1] else "examples/limma_sim/out"
@@ -44,7 +45,7 @@ fit$genes <- data.frame(symbol = sprintf("SYM%04d", seq_len(n_genes)))
 llomics_limma(
   fit,
   coefs = "stim_vs_ctrl",
-  definitions = c(stim_vs_ctrl = "stimulated - control, adjusted for batch; positive logFC = higher in stimulated"),
+  definitions = c(stim_vs_ctrl = "stimulated - control, adjusted for batch; positive effect = higher in stimulated"),
   targets = targets, group = "group", batch = "batch", batch_in_design = TRUE,
   analysis_id = "limma-sim",
   question = "Which features respond to stimulation? (simulated data: features have no biological meaning)",

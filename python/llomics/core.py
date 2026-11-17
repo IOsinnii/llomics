@@ -270,8 +270,12 @@ def contrast_unit(table: Table, *, unit_id: str, definition: str, n_features: in
                   fdr: float | None = None, min_effect: float = 0.0, effect_cutoff: float | None = None,
                   exclude: str | None = None, panel: Sequence[str] = (), size: Mapping[str, Any] | None = None,
                   extra_facts: Mapping[str, Any] | None = None, contrast_weights: Mapping[str, float] | None = None,
-                  p_floor: float | None = None) -> dict[str, Any]:
-    """One contrast: hit counts, p-value shape, top up and down features, and the panel."""
+                  p_shape_skip: str | None = None, p_floor: float | None = None) -> dict[str, Any]:
+    """One contrast: hit counts, p-value shape, top up and down features, and the panel.
+
+    ``p_shape_skip`` gives the reason the p-value histogram cannot be judged (for example the tool
+    pre-filtered features before testing); the check is then recorded as not_run with that reason.
+    """
     n_features = n_features or DEFAULTS["n_features"]
     fdr = fdr or DEFAULTS["fdr"]
     effect_cutoff = DEFAULTS["effect_cutoff"] if effect_cutoff is None else effect_cutoff
@@ -288,7 +292,7 @@ def contrast_unit(table: Table, *, unit_id: str, definition: str, n_features: in
     top_up, top_down = up[:n_features], down[:n_features]
 
     h = p_histogram(r["p"] for r in informative)
-    status, note = p_shape(h)
+    status, note = ("not_run", p_shape_skip) if p_shape_skip else p_shape(h)
     effects = [r["effect"] for r in informative]
     facts: dict[str, Any] = {
         "fdr": fdr,
@@ -492,7 +496,8 @@ def dge_payload(tables: Mapping[str, Table], definitions: Mapping[str, str], *, 
                 contrast_weights: Mapping[str, Mapping[str, float]] | None = None,
                 filters: Sequence[Mapping[str, str]] = (), source_tables: Mapping[str, str] | None = None,
                 run_extra: Mapping[str, Any] | None = None, dataset_reference: Mapping[str, Any] | None = None,
-                trust: Mapping[str, Any] | None = None, p_floor: float | None = None) -> dict[str, Any]:
+                p_shape_skip: str | None = None, trust: Mapping[str, Any] | None = None,
+                p_floor: float | None = None) -> dict[str, Any]:
     """A differential-analysis payload from one standard-column table per contrast."""
     n_features = n_features or DEFAULTS["n_features"]
     fdr = fdr or DEFAULTS["fdr"]
@@ -504,13 +509,15 @@ def dge_payload(tables: Mapping[str, Table], definitions: Mapping[str, str], *, 
     units = [
         contrast_unit(t, unit_id=uid, definition=definitions[uid], n_features=n_features, fdr=fdr,
                       min_effect=min_effect, effect_cutoff=effect_cutoff, exclude=exclude, panel=panel,
-                      size=(sizes or {}).get(uid), contrast_weights=(contrast_weights or {}).get(uid), p_floor=p_floor)
+                      size=(sizes or {}).get(uid), contrast_weights=(contrast_weights or {}).get(uid),
+                      p_shape_skip=p_shape_skip, p_floor=p_floor)
         for uid, t in tables.items()
     ]
     shapes = [(u["unit_id"], u["trust"][0]) for u in units]
     has_stat = all("stat" in t for t in tables.values())
     checks = [
         replicates_check(group_sizes, min_replicates, units_are_replicates),
+        check("pvalue_distribution", "not_run", p_shape_skip) if p_shape_skip else
         check("pvalue_distribution", worst(c["status"] for _, c in shapes),
               " | ".join(f"{uid}: {c['note']}" for uid, c in shapes)),
         batch_confounding_check(batch_crosstab, batch_in_design, batch_adjustable, single_batch),
@@ -570,7 +577,7 @@ def clusters_payload(tables: Mapping[str, Table], *, analysis_id: str, question:
 
     doublet_note = None
     if doublet is not None:
-        doublet_note = f"{reference['pct_predicted_doublet']}% of observations predicted doublets"
+        doublet_note = f"{_fmt(reference['pct_predicted_doublet'])}% of observations predicted doublets"
     checks = cluster_trust(
         test=test, n_samples=len(set(map(str, sample))) if sample is not None else None, doublet_note=doublet_note,
         n_batches=len(set(map(str, batch))) if batch is not None else None, batch_flagged=flagged)
