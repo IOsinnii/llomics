@@ -69,7 +69,7 @@ Supporting a new tool means writing a short adapter, not a new implementation. T
 is about 100 lines; the core is about 600.
 
 The first version did not have this split. The scanpy wrapper did everything itself (commit
-`8095318`). The next commit (`1744b13`) pulled the shared logic out into the core. Writing it once
+`9440a9d`). The next commit (`8fd8fc8`) pulled the shared logic out into the core. Writing it once
 the simple way, seeing what repeats, then restructuring, is a normal order to work in.
 
 ## What happens when I call a wrapper?
@@ -138,7 +138,7 @@ by field. Text and counts must match exactly; decimals must match to about three
 the two languages round a number like 1.2345 differently in the last place.
 
 This is the test that lets two implementations exist without drifting apart. When technical
-panels and enrichment were added (commit `0d42c5e`), they were written in both languages and the
+panels and enrichment were added (commit `270913c`), they were written in both languages and the
 parity test confirmed zero differences before the commit.
 
 ## Why is the same file in four places?
@@ -166,7 +166,7 @@ benchmark/score.py` reports whether the pipeline reaches it.
 The first run found a design flaw that no test had, because the tests encoded the same wrong
 assumption as the code. An analysis with only two replicates per group passed, since a quality
 check with status "warning" never blocked anything. All tests were green at the time. The fix was
-a design change, in commit `cb0ae90`.
+a design change, in commit `73319a9`.
 
 ## In what order was it built?
 
@@ -174,19 +174,22 @@ a design change, in commit `cb0ae90`.
 with a message saying what changed.
 
 ```text
-f5ed668 Add the payload contract skill and validator
-15e5956 Add method skills for clusters, PCA, GLM, lasso, PLS-DA and synthesis
-1c486ea Add PBMC 10k worked example converted to the contract
-0462aa4 Add limma skill, R extractor, starter questions and simulated example
-fb52867 Add judge skill and Bedrock ask step with vote shares and gates
-1f89bfd Add README with adaptation and HPC walkthroughs
-8095318 Add Python package with scanpy rank_genes_groups wrapper
-1744b13 Restructure Python into core, adapters and one shared contract file
-02f2445 Add R package: core mirroring Python, limma and Seurat adapters
-50f8cb3 Add tests, fixtures, golden payloads and a CI workflow
-cb0ae90 Add benchmark of planted problems; let each check name its blocking statuses
-0d42c5e Add technical panels and gene-set enrichment, computed in code
-0c9ec9d Update README and skills for the packages, wrappers, panels and benchmark
+005de28 Add the payload contract skill and validator
+85d5785 Add method skills for clusters, PCA, GLM, lasso, PLS-DA and synthesis
+00df7c7 Add PBMC 10k worked example converted to the contract
+49f8609 Add limma skill, R extractor, starter questions and simulated example
+b9cc0e2 Add judge skill and Bedrock ask step with vote shares and gates
+ce3f113 Add README with adaptation and HPC walkthroughs
+9440a9d Add Python package with scanpy rank_genes_groups wrapper
+8fd8fc8 Restructure Python into core, adapters and one shared contract file
+9c19147 Add R package: core mirroring Python, limma and Seurat adapters
+9181134 Add tests, fixtures, golden payloads and a CI workflow
+73319a9 Add benchmark of planted problems; let each check name its blocking statuses
+270913c Add technical panels and gene-set enrichment, computed in code
+e357d86 Update README and skills for the packages, wrappers, panels and benchmark
+ae74cc9 Add a beginner's walkthrough of how the package is built and what a release still needs
+2fd04ed add licence
+c7b45ed Add MIT licence and author and maintainer metadata
 ```
 
 The shape to notice: definition first, then one working example on real data, then a first
@@ -235,7 +238,7 @@ were verified on this repository; the rest are known requirements not yet attemp
 | Missing | Why it blocks a release |
 | :--- | :--- |
 | Sources for the technical gene panels | The lists in `llomics-panels.json` were compiled from general knowledge. A release needs a citation for each |
-| A run of the CI workflow | `.github/workflows/tests.yml` exists but has never executed |
+| A green CI run | The first run on GitHub passed the Python job; the R job crashed in the runner while loading a Seurat dependency. The workflow now runs the R core and the Seurat adapter as separate jobs |
 | A changelog and a versioning rule | Users need to know what changed. The contract version and the two package versions are separate numbers with no stated relation |
 | The name `llomics` confirmed free | Not checked on PyPI or CRAN |
 | A release procedure | Tagging, building and uploading are manual and unwritten |
@@ -259,12 +262,12 @@ were verified on this repository; the rest are known requirements not yet attemp
 `R CMD check --as-cran` was run on the package before the licence and author were added. It
 stopped at the first step. With placeholder licence and author fields, including a maintainer
 email, it finished with 2 warnings and 1 note, and the package's own tests passed inside the
-check. The licence, author and maintainer, with an email address, are now real, so this first error is resolved.
+check. Declaring `SeuratObject` has since removed one warning: the check now ends with 1 warning
+(undocumented functions) and 1 note (new submission). The licence, author and maintainer, with an email address, are now real, so this first error is resolved.
 
 | Missing | Why it blocks a release |
 | :--- | :--- |
 | Help pages (*checked*: warning, all 10 exported functions undocumented) | The source has roxygen comments, but `roxygen2` has never been run, so no `man/` pages exist. CRAN does not accept warnings |
-| `SeuratObject` in `Suggests` (*checked*: warning) | The tests load a dataset from it without declaring it |
 | Examples (*checked*: none) | CRAN expects a runnable example for exported functions |
 | A default that writes to the working directory | `llomics_limma()` has `out_dir = "."`. CRAN policy forbids writing to the user's directories unless asked; the default should be `NULL` |
 | `SystemRequirements` for Python | `llomics_validate()` runs a Python script, which must be declared, and the function must fail gracefully without it |

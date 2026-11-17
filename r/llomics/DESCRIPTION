@@ -11,5 +11,5 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1)
 Imports: jsonlite, stats, utils
-Suggests: limma, Seurat, testthat (>= 3.0.0)
+Suggests: limma, Seurat, SeuratObject, testthat (>= 3.0.0)
 Config/testthat/edition: 3
