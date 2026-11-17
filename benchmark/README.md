@@ -43,14 +43,16 @@ Gates alone, with the starter gate settings in
 | `batch_aliased` | review | trust | caught: `batch_confounding` fail |
 | `no_batch_info` | review | trust | caught: `batch_confounding` not_run |
 | `unmodelled_batch` | review | trust | caught: `pvalue_distribution` warn |
-| `sex_imbalance` | review | model | pending |
-| `stress_handling` | review | model | pending |
+| `sex_imbalance` | review | fact | caught: `technical_signature` (sex panel) |
+| `stress_handling` | review | fact | caught: `technical_signature` (stress panel) |
 | `composition` | review | model | pending |
 | `two_replicates` | review | trust | caught: `replicates` warn |
 | `technical_replicates` | review | none | not caught (known blind spot) |
 
-The model has not been run on the benchmark yet. Until it has, nothing is known about the three
-pending scenarios or about false alarms on the two clean ones.
+The model has not been run on the benchmark yet. Until it has, nothing is known about the
+`composition` scenario, or about whether the model raises false alarms on the two clean ones.
+`clean_hypoxia` is the one to watch: the starter questions list hypoxia genes under handling
+stress, so the model has to anchor on the stated comparison.
 
 ## What the first run changed
 
@@ -58,6 +60,11 @@ Under the original gate settings, a check blocked only on `fail` or `not_run`. T
 through: two replicates per group (`replicates` was `warn`) and a design with batch left out
 (`pvalue_distribution` was `warn`). The gate settings now name the blocking statuses per check, and
 a warning blocks for those two. `tests/test_benchmark.py` pins this.
+
+The sex-imbalance and handling-stress scenarios were first left to the model. They are now caught
+in code: the packages score six technical panels against every hit list, and the gate reads the
+resulting flag. In both scenarios the panel holds over 85% of the top hits; in the nine others no
+panel is flagged.
 
 ## Known blind spot
 

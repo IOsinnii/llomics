@@ -95,8 +95,21 @@ fails, is refused, or is cut off is recorded as no answer and sends the unit to 
 never counted as a "no".
 
 The questions file holds `questions` (each with `id`, `shape` of `choice`, `bool`, `score`, or
-`text`, and `text`) and `gates` (`blocking_checks`, `blocking_statuses`, `facts`, `judgments`).
+`text`, and `text`) and `gates`:
+
+- `blocking_checks`: an object naming, for each trust check, the statuses that send the unit to
+  review. A warning should block for some checks and not for others: in the starter file it blocks
+  for `replicates` and `pvalue_distribution`, and not for `batch_confounding`.
+- `facts`: comparisons on numbers in the unit's `facts`, such as `n_hits < 10` or
+  `n_technical_flags > 0`. A fact that is `null` sends the unit to review as missing.
+- `judgments`: for a question, the accepted answers and the minimum share of runs that must give
+  one of them.
+
 `text` answers are recorded for the reviewer and are not gated.
+
+The gate settings were changed once already by the benchmark in the llomics repository: under a
+blanket "block on fail or not_run" rule, an analysis with two replicates per group and one with
+batch left out of the design both passed. Run `python benchmark/score.py` after changing them.
 
 ## Record enough to rerun
 

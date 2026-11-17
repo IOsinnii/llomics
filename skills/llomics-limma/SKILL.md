@@ -39,11 +39,17 @@ Write the full table to disk and record its path in `run.source_tables`.
 
 ## Reference extractor
 
-`scripts/llomics_limma.R` implements this skill for a limma fit: `llomics_limma(fit, coefs, ...)`
-writes the payload and the full table per contrast, and computes the trust checks below from the
-fit and the sample table. `references/questions.contrast.json` is a starter set of questions and
-gates for the `llomics-judge` ask step. DESeq2 and edgeR have no extractor yet; follow the table
-above.
+The llomics R package implements this skill. `llomics_limma(fit, coefs, definitions, targets,
+group, ...)` writes the payload and the full table per contrast, and computes the trust checks
+below from the fit and the sample table. What it cannot know (whether batch is in the design,
+whether voom was used) is declared through its arguments; anything undeclared is `not_run`.
+
+For DESeq2, edgeR or any other tool, rename the result columns to `feature`, `effect`, `p`,
+`p_adj` (and `stat`, `ave_expr`, `symbol` where they exist) and call `llomics_dge_payload()` in R
+or `llomics.dge_payload()` in Python. All of these write `"method": "dge"`.
+
+`references/questions.contrast.json` is a starter set of questions and gates for the
+`llomics-judge` ask step.
 
 ## Unit state
 
@@ -57,12 +63,16 @@ above.
     "fdr": 0.05,
     "n_up": 412,
     "n_down": 318,
-    "n_up_lfc1": 96,
-    "n_down_lfc1": 41,
+    "n_hits": 730,
+    "n_up_effect": 96,
+    "n_down_effect": 41,
     "n_near_miss": 207,
     "pi0": 0.74,
     "p_histogram": [3950, 1720, 1410, 1290, 1220, 1180, 1150, 1120, 1100, 1094],
-    "logfc_quantiles": {"q01": -1.9, "q25": -0.21, "q50": 0.01, "q75": 0.23, "q99": 2.4}
+    "effect_quantiles": {"q01": -1.9, "q25": -0.21, "q50": 0.01, "q75": 0.23, "q99": 2.4},
+    "technical_signatures": {"stress": {"n_measured": 41, "n_hits": 4, "top_share": 0.02, "p": 0.11}},
+    "technical_flags": [],
+    "n_technical_flags": 0
   },
   "top_features": {
     "up": [{"feature": "ENSG00000185745", "symbol": "IFIT1", "effect": 4.21, "ave_expr": 6.3, "stat": 14.2, "p_adj": 3.1e-9}],
@@ -85,7 +95,13 @@ Compute in code and store in `facts`:
 - **`p_histogram`**: raw p-values in ten equal bins. This one row tells more about the health of
   the analysis than any single gene.
 - **`pi0`**: estimated share of true nulls, from the flat right side of the histogram.
-- **`logfc_quantiles`**: where the bulk of effects sit, so a logFC of 1 can be placed.
+- **`effect_quantiles`**: where the bulk of effects sit, so a logFC of 1 can be placed.
+- **Technical signatures.** How many significant features fall in each known artefact panel (sex,
+  stress, cell cycle, haemoglobin, mitochondrial, ribosomal), their share of the top 50 hits, and
+  a hypergeometric p. A dominated hit list is flagged in `technical_flags`. If no panel feature
+  was tested, `n_technical_flags` is `null`: the question could not be asked.
+- **Enrichment**, when gene sets are supplied: the over-represented sets per direction with their
+  overlap genes, in the unit's `enrichment` field.
 
 Rank `top_features` by the moderated statistic, not by adjusted p-value: ties in adjusted p are
 common and hide the order. Keep up and down separate so a strong direction does not crowd out the

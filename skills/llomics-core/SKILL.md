@@ -38,7 +38,7 @@ judged alone, and there are too many.
 | :--- | :--- | :--- |
 | Clustering + markers | cluster | markers of the cluster |
 | PCA | component | loadings of the component |
-| limma / DESeq2 / edgeR | contrast | hits of the contrast |
+| limma / DESeq2 / edgeR, or any two-group test (method `dge`) | contrast | hits of the contrast |
 | GLM (one model) | model | terms of the model |
 | lasso / elastic net | model at the chosen λ | selected features |
 | PLS-DA | model, then component | high-VIP features |
@@ -52,7 +52,7 @@ unit is wrong.
 ```json
 {
   "llomics": "0.1",
-  "method": "limma",
+  "method": "dge",
   "run": {
     "analysis_id": "stim-vs-ctrl-2026-11",
     "question": "Which genes respond to stimulation, and is the response an interferon program?",
@@ -141,9 +141,29 @@ consumes the answers decides what a `fail` or `not_run` blocks (see `llomics-jud
 python skills/llomics-core/scripts/validate_payload.py path/to/payload.json
 ```
 
-The validator (standard library only) checks the envelope, the required trust checks for the
-method, zero or out-of-range p-values, NaN and infinity, tail counts, and the per-unit size
-budget. Errors exit non-zero. Warnings list `not_run` checks and unknown tail sizes.
+The validator (standard library only) checks the envelope, the required trust checks and unit
+types for the method, zero or out-of-range p-values, NaN and infinity, tail counts, and the
+per-unit size budget. Errors exit non-zero. Warnings list `not_run` checks and unknown tail sizes.
+
+The rules it enforces are data, not code: `scripts/llomics-contract.json` lists the statuses, the
+required checks per method, the defaults and the heuristic thresholds. The Python and R packages
+read the same file.
+
+## Packages
+
+The llomics repository ships a Python package and an R package that implement this contract, so a
+payload rarely has to be assembled by hand:
+
+| Call | Builds |
+| :--- | :--- |
+| `llomics.rank_genes_groups(adata, groupby, ...)` | cluster units, or contrast units with a reference group |
+| `llomics_FindAllMarkers(obj, ...)`, `llomics_FindMarkers(obj, ident.1, ident.2, ...)` | the same from Seurat |
+| `llomics_limma(fit, coefs, definitions, targets, group, ...)` | contrast units from a limma fit |
+| `llomics.dge_payload(tables, definitions, ...)`, `llomics_dge_payload(...)` | contrast units from any table with the columns `feature`, `effect`, `p`, `p_adj` |
+
+Each takes `n_features`, `panel`, `question`, the sample and batch columns for the trust checks,
+and optionally `gene_sets`. Use them when they fit; write an extractor by hand, following the
+method skill, when they do not.
 
 ## After the payload
 

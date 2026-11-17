@@ -32,6 +32,27 @@ not against fixed cutoffs.
 | QC per cell | `adata.obs[["n_genes_by_counts", "total_counts", "pct_counts_mt"]]` | `obj$nFeature_RNA`, `obj$nCount_RNA`, `obj$percent.mt` |
 | doublets | Scrublet `doublet_score`, `predicted_doublet` | scDblFinder `scDblFinder.score`, `.class` |
 
+## Wrappers
+
+The llomics packages implement this skill:
+
+```python
+payload = llomics.rank_genes_groups(adata, "leiden", method="wilcoxon", n_features=15,
+                                    panel=["CD3D", "MS4A1"], question="Which cell type is each cluster?",
+                                    sample_key="donor", batch_key="run", out="markers.llomics.json")
+```
+
+```r
+payload <- llomics_FindAllMarkers(obj, only.pos = TRUE, n_features = 15, panel = c("CD3D", "MS4A1"),
+                                  question = "Which cell type is each cluster?",
+                                  sample_col = "donor", batch_col = "run", out = "markers.llomics.json")
+```
+
+Both run the test, compute the facts and trust checks below, score the technical panels against
+each cluster's markers, and add enrichment when `gene_sets` is given. Seurat reports no test
+statistic, so its markers are ranked by p-value and then fold change, and its adjusted p-value is
+a Bonferroni correction over all features.
+
 ## Unit state
 
 ```json
