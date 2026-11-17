@@ -1,0 +1,71 @@
+{
+  "_note": "Each scenario is a simulated two-group limma analysis with a known truth. `expected` is what a correct pipeline should decide. `caught_by` names the layer that should catch the problem: trust (a trust check), fact (a number in the payload), model (a judgment), or none (a known blind spot of the payload).",
+  "scenarios": [
+    {
+      "id": "clean_interferon",
+      "truth": "A real interferon response: about 55 interferon-stimulated genes up, balanced batches in the design.",
+      "expected": "auto",
+      "caught_by": null
+    },
+    {
+      "id": "clean_hypoxia",
+      "truth": "A real hypoxia response to a hypoxia experiment. The starter questions list hypoxia genes under 'sample handling or stress', so this tests whether the judgment is anchored to the stated comparison.",
+      "expected": "auto",
+      "caught_by": null
+    },
+    {
+      "id": "null",
+      "truth": "No difference between the groups.",
+      "expected": "review",
+      "caught_by": "fact"
+    },
+    {
+      "id": "batch_aliased",
+      "truth": "A real response, but every treated sample is in one batch and every control in the other, with a batch effect on 600 genes.",
+      "expected": "review",
+      "caught_by": "trust"
+    },
+    {
+      "id": "no_batch_info",
+      "truth": "A real response and a sound design, but no batch variable was given to the extractor.",
+      "expected": "review",
+      "caught_by": "trust"
+    },
+    {
+      "id": "unmodelled_batch",
+      "truth": "A real response, with balanced batches and a strong batch effect on 1,500 genes, but batch was left out of the design. The variance is inflated and the test is conservative for those genes.",
+      "expected": "review",
+      "caught_by": "trust"
+    },
+    {
+      "id": "sex_imbalance",
+      "truth": "No treatment effect. All treated samples are female and all controls male; sex is not recorded in the sample table. The hits are sex-linked genes.",
+      "expected": "review",
+      "caught_by": "model"
+    },
+    {
+      "id": "stress_handling",
+      "truth": "No treatment effect. Treated samples were processed later; immediate-early and heat-shock genes are up.",
+      "expected": "review",
+      "caught_by": "model"
+    },
+    {
+      "id": "composition",
+      "truth": "No regulation within cells. Treated tissue samples contain more lymphocytes; lymphocyte marker genes are up.",
+      "expected": "review",
+      "caught_by": "model"
+    },
+    {
+      "id": "two_replicates",
+      "truth": "A real interferon response, but only two samples per group.",
+      "expected": "review",
+      "caught_by": "trust"
+    },
+    {
+      "id": "technical_replicates",
+      "truth": "No treatment effect. Three biological samples per group were each measured twice and the six measurements treated as independent, so the test is anticonservative. Nothing in the sample table says so.",
+      "expected": "review",
+      "caught_by": "none"
+    }
+  ]
+}

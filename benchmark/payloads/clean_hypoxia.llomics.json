@@ -1,0 +1,258 @@
+{
+  "llomics": "0.1",
+  "method": "dge",
+  "run": {
+    "analysis_id": "clean_hypoxia",
+    "question": "Which genes respond to low oxygen?",
+    "tool": "limma 3.66.0",
+    "steps": ["simulated log2 expression over human gene symbols", "lmFit ~ 0 + group + batch", "contrasts.fit treated - control", "eBayes(trend = TRUE)"],
+    "filters": [
+      {
+        "rule": "p_adj < 0.05",
+        "why": "FDR control"
+      },
+      {
+        "rule": "top 15 by |stat| per direction; never padded",
+        "why": "payload size"
+      }
+    ],
+    "p_floor": 1e-300,
+    "n_p_values_floored": 0,
+    "design_columns": ["control", "treated", "batch_b2"],
+    "df_prior_median": 7.65,
+    "df_prior_infinite": false,
+    "source_tables": {
+      "note": "benchmark payload; the full table is not kept"
+    }
+  },
+  "dataset": {
+    "n_observations": 12,
+    "observation_type": "sample",
+    "n_features": 3958,
+    "reference": {
+      "n_contrasts": 1
+    }
+  },
+  "trust": [
+    {
+      "check": "replicates",
+      "status": "pass",
+      "value": 6,
+      "note": "samples per group: control=6, treated=6; pass needs at least 3"
+    },
+    {
+      "check": "pvalue_distribution",
+      "status": "pass",
+      "note": "treated_vs_control: non-increasing from the first bin, flat on the right"
+    },
+    {
+      "check": "batch_confounding",
+      "status": "pass",
+      "value": {
+        "control": {
+          "b1": 3,
+          "b2": 3
+        },
+        "treated": {
+          "b1": 3,
+          "b2": 3
+        }
+      },
+      "note": "batch is in the design and every group occurs in every batch"
+    },
+    {
+      "check": "multiple_testing",
+      "status": "pass",
+      "note": "Benjamini-Hochberg within the one contrast reported"
+    },
+    {
+      "check": "mean_variance",
+      "status": "pass",
+      "note": "detected: eBayes(trend = TRUE)"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "treated_vs_control",
+      "unit_type": "contrast",
+      "definition": "1% oxygen 24 h - 21% oxygen, cultured cells, adjusted for batch; positive effect = higher in hypoxia",
+      "contrast_weights": {
+        "control": -1,
+        "treated": 1
+      },
+      "size": {
+        "n_tested": 3958,
+        "n_per_group": {
+          "control": 6,
+          "treated": 6
+        }
+      },
+      "facts": {
+        "fdr": 0.05,
+        "effect_cutoff": 1,
+        "n_hits": 42,
+        "n_up": 41,
+        "n_down": 1,
+        "n_up_effect": 40,
+        "n_down_effect": 0,
+        "n_near_miss": 3,
+        "n_p_adj_missing": 0,
+        "n_uninformative": 0,
+        "pi0": 1,
+        "p_histogram": [391, 397, 380, 407, 402, 417, 393, 412, 384, 375],
+        "effect_quantiles": {
+          "q01": -0.497,
+          "q25": -0.12,
+          "q50": 0.00573,
+          "q75": 0.128,
+          "q99": 1.06
+        }
+      },
+      "top_features": {
+        "up": [
+          {
+            "feature": "PFKFB3",
+            "effect": 2.362,
+            "ave_expr": 11.7,
+            "stat": 16.4,
+            "p_adj": 3.534e-08
+          },
+          {
+            "feature": "SLC2A3",
+            "effect": 2.324,
+            "ave_expr": 5.946,
+            "stat": 15.68,
+            "p_adj": 3.534e-08
+          },
+          {
+            "feature": "STC2",
+            "effect": 2.462,
+            "ave_expr": 10.68,
+            "stat": 15.45,
+            "p_adj": 3.534e-08
+          },
+          {
+            "feature": "VEGFA",
+            "effect": 2.345,
+            "ave_expr": 11.44,
+            "stat": 14.88,
+            "p_adj": 4.76e-08
+          },
+          {
+            "feature": "ENO1",
+            "effect": 2.038,
+            "ave_expr": 4.883,
+            "stat": 14.29,
+            "p_adj": 7.124e-08
+          },
+          {
+            "feature": "PDK1",
+            "effect": 2.258,
+            "ave_expr": 8.793,
+            "stat": 13.86,
+            "p_adj": 9.345e-08
+          },
+          {
+            "feature": "GAPDH",
+            "effect": 2.058,
+            "ave_expr": 8.123,
+            "stat": 13.74,
+            "p_adj": 9.345e-08
+          },
+          {
+            "feature": "BNIP3L",
+            "effect": 2.183,
+            "ave_expr": 10.53,
+            "stat": 13.54,
+            "p_adj": 1.015e-07
+          },
+          {
+            "feature": "ANGPTL4",
+            "effect": 2.831,
+            "ave_expr": 9.027,
+            "stat": 13.27,
+            "p_adj": 1.228e-07
+          },
+          {
+            "feature": "ALDOA",
+            "effect": 2.262,
+            "ave_expr": 7.42,
+            "stat": 13.1,
+            "p_adj": 1.351e-07
+          },
+          {
+            "feature": "P4HA1",
+            "effect": 2.313,
+            "ave_expr": 10.58,
+            "stat": 12.47,
+            "p_adj": 2.611e-07
+          },
+          {
+            "feature": "AK4",
+            "effect": 1.852,
+            "ave_expr": 5.304,
+            "stat": 12.07,
+            "p_adj": 3.74e-07
+          },
+          {
+            "feature": "HK2",
+            "effect": 1.77,
+            "ave_expr": 5.596,
+            "stat": 12.04,
+            "p_adj": 3.74e-07
+          },
+          {
+            "feature": "NDRG1",
+            "effect": 1.864,
+            "ave_expr": 11.72,
+            "stat": 11.92,
+            "p_adj": 3.89e-07
+          },
+          {
+            "feature": "P4HA2",
+            "effect": 2.323,
+            "ave_expr": 7.329,
+            "stat": 11.89,
+            "p_adj": 3.89e-07
+          }
+        ],
+        "down": [
+          {
+            "feature": "FANCB",
+            "effect": -0.6099,
+            "ave_expr": 6.563,
+            "stat": -4.384,
+            "p_adj": 0.0409
+          }
+        ]
+      },
+      "panel": {
+        "VEGFA": {
+          "effect": 2.345,
+          "ave_expr": 11.44,
+          "stat": 14.88,
+          "p_adj": 4.76e-08
+        },
+        "CA9": {
+          "effect": 1.645,
+          "ave_expr": 4.676,
+          "stat": 11.17,
+          "p_adj": 8.162e-07
+        },
+        "ACTB": null
+      },
+      "tail": {
+        "n_shown": 16,
+        "n_eligible": 42,
+        "rule": "p_adj < 0.05, ranked by |stat|, up to 15 per direction"
+      },
+      "trust": [
+        {
+          "check": "pvalue_distribution",
+          "status": "pass",
+          "note": "non-increasing from the first bin, flat on the right"
+        }
+      ]
+    }
+  ]
+}

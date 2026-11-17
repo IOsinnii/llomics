@@ -41,15 +41,37 @@
     }
   ],
   "gates": {
-    "blocking_checks": ["replicates", "pvalue_distribution", "batch_confounding"],
-    "blocking_statuses": ["fail", "not_run"],
+    "_note": "For each blocking check, the statuses that send the unit to review. A warning blocks for replicates and for the p-value distribution, because both mean the hit list may not be what it seems. A batch warning (batch balanced but not modelled, or not declared) is recorded and does not block.",
+    "blocking_checks": {
+      "replicates": [
+        "warn",
+        "fail",
+        "not_run"
+      ],
+      "pvalue_distribution": [
+        "warn",
+        "fail",
+        "not_run"
+      ],
+      "batch_confounding": [
+        "fail",
+        "not_run"
+      ]
+    },
     "facts": [
-      {"fact": "n_hits", "op": "<", "value": 10, "reason": "too_few_hits"}
+      {
+        "fact": "n_hits",
+        "op": "<",
+        "value": 10,
+        "reason": "too_few_hits"
+      }
     ],
     "judgments": [
       {
         "question": "dominant_signal",
-        "accept": ["response to the comparison"],
+        "accept": [
+          "response to the comparison"
+        ],
         "min_share": 0.8,
         "reason": "signal_is_not_the_comparison"
       }

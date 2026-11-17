@@ -170,13 +170,21 @@ def summarise(runs: list[dict[str, Any]], questions: list[dict[str, Any]]) -> di
 
 
 def trust_reasons(payload: dict[str, Any], unit: dict[str, Any], gates: dict[str, Any]) -> list[str]:
-    blocking = set(gates.get("blocking_statuses", ["fail", "not_run"]))
+    """Reason codes for blocking trust checks.
+
+    ``blocking_checks`` is a list of check names (each blocks on ``blocking_statuses``), or an object
+    mapping each check name to the statuses that block it, so that a warning can block for one check
+    and not for another.
+    """
+    default = gates.get("blocking_statuses", ["fail", "not_run"])
+    spec = gates.get("blocking_checks", [])
+    per_check = spec if isinstance(spec, dict) else {name: default for name in spec}
     reasons = []
-    for name in gates.get("blocking_checks", []):
+    for name, blocking in per_check.items():
         statuses = [c["status"] for c in payload["trust"] + unit.get("trust", []) if c["check"] == name]
         if not statuses:
             reasons.append(f"trust:{name}:absent")
-        for status in sorted(set(statuses) & blocking):
+        for status in sorted(set(statuses) & set(blocking)):
             reasons.append(f"trust:{name}:{status}")
     return reasons
 

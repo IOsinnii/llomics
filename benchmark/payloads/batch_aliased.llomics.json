@@ -1,0 +1,318 @@
+{
+  "llomics": "0.1",
+  "method": "dge",
+  "run": {
+    "analysis_id": "batch_aliased",
+    "question": "Which genes respond to interferon-beta?",
+    "tool": "limma 3.66.0",
+    "steps": ["simulated log2 expression over human gene symbols", "lmFit ~ 0 + group", "contrasts.fit treated - control", "eBayes(trend = TRUE)"],
+    "filters": [
+      {
+        "rule": "p_adj < 0.05",
+        "why": "FDR control"
+      },
+      {
+        "rule": "top 15 by |stat| per direction; never padded",
+        "why": "payload size"
+      }
+    ],
+    "p_floor": 1e-300,
+    "n_p_values_floored": 0,
+    "design_columns": ["control", "treated"],
+    "df_prior_median": 7.685,
+    "df_prior_infinite": false,
+    "source_tables": {
+      "note": "benchmark payload; the full table is not kept"
+    }
+  },
+  "dataset": {
+    "n_observations": 12,
+    "observation_type": "sample",
+    "n_features": 3958,
+    "reference": {
+      "n_contrasts": 1
+    }
+  },
+  "trust": [
+    {
+      "check": "replicates",
+      "status": "pass",
+      "value": 6,
+      "note": "samples per group: control=6, treated=6; pass needs at least 3"
+    },
+    {
+      "check": "pvalue_distribution",
+      "status": "pass",
+      "note": "treated_vs_control: non-increasing from the first bin, flat on the right"
+    },
+    {
+      "check": "batch_confounding",
+      "status": "fail",
+      "value": {
+        "control": {
+          "b1": 6
+        },
+        "treated": {
+          "b2": 6
+        }
+      },
+      "note": "every batch contains a single group: the group effect cannot be separated from batch"
+    },
+    {
+      "check": "multiple_testing",
+      "status": "pass",
+      "note": "Benjamini-Hochberg within the one contrast reported"
+    },
+    {
+      "check": "mean_variance",
+      "status": "pass",
+      "note": "detected: eBayes(trend = TRUE)"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "treated_vs_control",
+      "unit_type": "contrast",
+      "definition": "interferon-beta 6 h - untreated, primary fibroblasts; positive effect = higher after interferon",
+      "contrast_weights": {
+        "control": -1,
+        "treated": 1
+      },
+      "size": {
+        "n_tested": 3958,
+        "n_per_group": {
+          "control": 6,
+          "treated": 6
+        }
+      },
+      "facts": {
+        "fdr": 0.05,
+        "effect_cutoff": 1,
+        "n_hits": 657,
+        "n_up": 648,
+        "n_down": 9,
+        "n_up_effect": 484,
+        "n_down_effect": 1,
+        "n_near_miss": 30,
+        "n_p_adj_missing": 0,
+        "n_uninformative": 0,
+        "pi0": 0.82,
+        "p_histogram": [992, 330, 320, 333, 361, 309, 331, 344, 314, 324],
+        "effect_quantiles": {
+          "q01": -0.473,
+          "q25": -0.0932,
+          "q50": 0.0504,
+          "q75": 0.244,
+          "q99": 1.97
+        }
+      },
+      "top_features": {
+        "up": [
+          {
+            "feature": "SAMD9",
+            "effect": 3.24,
+            "ave_expr": 11.41,
+            "stat": 24.89,
+            "p_adj": 1.292e-11
+          },
+          {
+            "feature": "XAF1",
+            "effect": 2.95,
+            "ave_expr": 11.19,
+            "stat": 20.52,
+            "p_adj": 1.757e-10
+          },
+          {
+            "feature": "NMI",
+            "effect": 2.967,
+            "ave_expr": 10.26,
+            "stat": 19.95,
+            "p_adj": 1.896e-10
+          },
+          {
+            "feature": "GBP1",
+            "effect": 3.404,
+            "ave_expr": 11.19,
+            "stat": 19.35,
+            "p_adj": 2.163e-10
+          },
+          {
+            "feature": "IFIT3",
+            "effect": 2.854,
+            "ave_expr": 11.52,
+            "stat": 19.2,
+            "p_adj": 2.163e-10
+          },
+          {
+            "feature": "SIGLEC1",
+            "effect": 3.097,
+            "ave_expr": 7.839,
+            "stat": 18.9,
+            "p_adj": 2.358e-10
+          },
+          {
+            "feature": "DTX3L",
+            "effect": 2.464,
+            "ave_expr": 9.421,
+            "stat": 18.28,
+            "p_adj": 3.56e-10
+          },
+          {
+            "feature": "OAS3",
+            "effect": 2.528,
+            "ave_expr": 11.73,
+            "stat": 17.71,
+            "p_adj": 4.748e-10
+          },
+          {
+            "feature": "IFI6",
+            "effect": 2.94,
+            "ave_expr": 9.401,
+            "stat": 17.7,
+            "p_adj": 4.748e-10
+          },
+          {
+            "feature": "LY6E",
+            "effect": 2.391,
+            "ave_expr": 9.112,
+            "stat": 17.38,
+            "p_adj": 5.81e-10
+          },
+          {
+            "feature": "TRIM22",
+            "effect": 2.695,
+            "ave_expr": 9.904,
+            "stat": 17.03,
+            "p_adj": 7.385e-10
+          },
+          {
+            "feature": "IRF7",
+            "effect": 2.823,
+            "ave_expr": 10.51,
+            "stat": 16.37,
+            "p_adj": 1.308e-09
+          },
+          {
+            "feature": "IFITM1",
+            "effect": 2.218,
+            "ave_expr": 9.57,
+            "stat": 15.55,
+            "p_adj": 2.857e-09
+          },
+          {
+            "feature": "GBP4",
+            "effect": 3.089,
+            "ave_expr": 7.234,
+            "stat": 15.32,
+            "p_adj": 3.372e-09
+          },
+          {
+            "feature": "SAMD9L",
+            "effect": 3.131,
+            "ave_expr": 12.18,
+            "stat": 14.49,
+            "p_adj": 7.552e-09
+          }
+        ],
+        "down": [
+          {
+            "feature": "AKAP13",
+            "effect": -1.026,
+            "ave_expr": 10.13,
+            "stat": -7.219,
+            "p_adj": 1.491e-05
+          },
+          {
+            "feature": "ZC3H12D",
+            "effect": -0.6215,
+            "ave_expr": 4.941,
+            "stat": -3.81,
+            "p_adj": 0.008484
+          },
+          {
+            "feature": "ANKRD12",
+            "effect": -0.6452,
+            "ave_expr": 9.404,
+            "stat": -3.448,
+            "p_adj": 0.01836
+          },
+          {
+            "feature": "OPLAH",
+            "effect": -0.5319,
+            "ave_expr": 4.954,
+            "stat": -3.182,
+            "p_adj": 0.03239
+          },
+          {
+            "feature": "CCNJ",
+            "effect": -0.5323,
+            "ave_expr": 10.16,
+            "stat": -3.162,
+            "p_adj": 0.03375
+          },
+          {
+            "feature": "HCFC1",
+            "effect": -0.4528,
+            "ave_expr": 9.748,
+            "stat": -3.076,
+            "p_adj": 0.04038
+          },
+          {
+            "feature": "DHX15",
+            "effect": -0.4599,
+            "ave_expr": 5.745,
+            "stat": -3.063,
+            "p_adj": 0.04139
+          },
+          {
+            "feature": "FAM111B",
+            "effect": -0.7166,
+            "ave_expr": 7.219,
+            "stat": -3.061,
+            "p_adj": 0.04154
+          },
+          {
+            "feature": "KCNAB3",
+            "effect": -0.8654,
+            "ave_expr": 3.63,
+            "stat": -2.986,
+            "p_adj": 0.04839
+          }
+        ]
+      },
+      "panel": {
+        "ISG15": {
+          "effect": 2.367,
+          "ave_expr": 8.287,
+          "stat": 14.17,
+          "p_adj": 8.97e-09
+        },
+        "MX1": {
+          "effect": 1.951,
+          "ave_expr": 7.345,
+          "stat": 12.65,
+          "p_adj": 3.245e-08
+        },
+        "ACTB": null,
+        "GAPDH": {
+          "effect": 0.03498,
+          "ave_expr": 7.331,
+          "stat": 0.207,
+          "p_adj": 0.9635
+        }
+      },
+      "tail": {
+        "n_shown": 24,
+        "n_eligible": 657,
+        "rule": "p_adj < 0.05, ranked by |stat|, up to 15 per direction"
+      },
+      "trust": [
+        {
+          "check": "pvalue_distribution",
+          "status": "pass",
+          "note": "non-increasing from the first bin, flat on the right"
+        }
+      ]
+    }
+  ]
+}

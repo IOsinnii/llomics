@@ -1,0 +1,261 @@
+{
+  "llomics": "0.1",
+  "method": "dge",
+  "run": {
+    "analysis_id": "two_replicates",
+    "question": "Which genes respond to interferon-beta?",
+    "tool": "limma 3.66.0",
+    "steps": ["simulated log2 expression over human gene symbols", "lmFit ~ 0 + group", "contrasts.fit treated - control", "eBayes(trend = TRUE)"],
+    "filters": [
+      {
+        "rule": "p_adj < 0.05",
+        "why": "FDR control"
+      },
+      {
+        "rule": "top 15 by |stat| per direction; never padded",
+        "why": "payload size"
+      }
+    ],
+    "p_floor": 1e-300,
+    "n_p_values_floored": 0,
+    "design_columns": ["control", "treated"],
+    "df_prior_median": 9.413,
+    "df_prior_infinite": false,
+    "source_tables": {
+      "note": "benchmark payload; the full table is not kept"
+    }
+  },
+  "dataset": {
+    "n_observations": 4,
+    "observation_type": "sample",
+    "n_features": 3958,
+    "reference": {
+      "n_contrasts": 1
+    }
+  },
+  "trust": [
+    {
+      "check": "replicates",
+      "status": "warn",
+      "value": 2,
+      "note": "samples per group: control=2, treated=2; pass needs at least 3"
+    },
+    {
+      "check": "pvalue_distribution",
+      "status": "pass",
+      "note": "treated_vs_control: non-increasing from the first bin, flat on the right"
+    },
+    {
+      "check": "batch_confounding",
+      "status": "not_applicable",
+      "note": "all observations come from one batch"
+    },
+    {
+      "check": "multiple_testing",
+      "status": "pass",
+      "note": "Benjamini-Hochberg within the one contrast reported"
+    },
+    {
+      "check": "mean_variance",
+      "status": "pass",
+      "note": "detected: eBayes(trend = TRUE)"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "treated_vs_control",
+      "unit_type": "contrast",
+      "definition": "interferon-beta 6 h - untreated, primary fibroblasts; positive effect = higher after interferon",
+      "contrast_weights": {
+        "control": -1,
+        "treated": 1
+      },
+      "size": {
+        "n_tested": 3958,
+        "n_per_group": {
+          "control": 2,
+          "treated": 2
+        }
+      },
+      "facts": {
+        "fdr": 0.05,
+        "effect_cutoff": 1,
+        "n_hits": 55,
+        "n_up": 53,
+        "n_down": 2,
+        "n_up_effect": 53,
+        "n_down_effect": 2,
+        "n_near_miss": 0,
+        "n_p_adj_missing": 0,
+        "n_uninformative": 0,
+        "pi0": 0.965,
+        "p_histogram": [466, 413, 395, 393, 381, 376, 406, 352, 399, 377],
+        "effect_quantiles": {
+          "q01": -0.82,
+          "q25": -0.224,
+          "q50": 0.012,
+          "q75": 0.229,
+          "q99": 1.86
+        }
+      },
+      "top_features": {
+        "up": [
+          {
+            "feature": "IFITM3",
+            "effect": 3.745,
+            "ave_expr": 9.439,
+            "stat": 12.32,
+            "p_adj": 0.0001843
+          },
+          {
+            "feature": "GBP4",
+            "effect": 3.751,
+            "ave_expr": 7.193,
+            "stat": 11.84,
+            "p_adj": 0.0001843
+          },
+          {
+            "feature": "IFI44L",
+            "effect": 3.437,
+            "ave_expr": 5.17,
+            "stat": 10.23,
+            "p_adj": 0.000396
+          },
+          {
+            "feature": "NMI",
+            "effect": 3.065,
+            "ave_expr": 10.25,
+            "stat": 10.05,
+            "p_adj": 0.000396
+          },
+          {
+            "feature": "ISG20",
+            "effect": 3.016,
+            "ave_expr": 8.037,
+            "stat": 9.863,
+            "p_adj": 0.000396
+          },
+          {
+            "feature": "IFIT5",
+            "effect": 3.459,
+            "ave_expr": 9.066,
+            "stat": 9.793,
+            "p_adj": 0.000396
+          },
+          {
+            "feature": "IFI6",
+            "effect": 2.779,
+            "ave_expr": 9.055,
+            "stat": 9.76,
+            "p_adj": 0.000396
+          },
+          {
+            "feature": "OAS3",
+            "effect": 2.898,
+            "ave_expr": 12.04,
+            "stat": 9.02,
+            "p_adj": 0.0007747
+          },
+          {
+            "feature": "PARP14",
+            "effect": 2.592,
+            "ave_expr": 8.194,
+            "stat": 8.869,
+            "p_adj": 0.0008162
+          },
+          {
+            "feature": "IFI35",
+            "effect": 3.26,
+            "ave_expr": 6.942,
+            "stat": 8.703,
+            "p_adj": 0.0008883
+          },
+          {
+            "feature": "CXCL10",
+            "effect": 2.446,
+            "ave_expr": 4.532,
+            "stat": 8.544,
+            "p_adj": 0.0009715
+          },
+          {
+            "feature": "USP18",
+            "effect": 2.343,
+            "ave_expr": 4.625,
+            "stat": 8.285,
+            "p_adj": 0.001201
+          },
+          {
+            "feature": "LY6E",
+            "effect": 2.449,
+            "ave_expr": 9.104,
+            "stat": 8.224,
+            "p_adj": 0.001201
+          },
+          {
+            "feature": "EIF2AK2",
+            "effect": 2.289,
+            "ave_expr": 8.5,
+            "stat": 8.093,
+            "p_adj": 0.001307
+          },
+          {
+            "feature": "IFI44",
+            "effect": 2.376,
+            "ave_expr": 9.116,
+            "stat": 7.915,
+            "p_adj": 0.001502
+          }
+        ],
+        "down": [
+          {
+            "feature": "PCGF3",
+            "effect": -2.718,
+            "ave_expr": 11.31,
+            "stat": -6.679,
+            "p_adj": 0.003099
+          },
+          {
+            "feature": "FAM45A",
+            "effect": -1.872,
+            "ave_expr": 7.404,
+            "stat": -6.428,
+            "p_adj": 0.004181
+          }
+        ]
+      },
+      "panel": {
+        "ISG15": {
+          "effect": 2.154,
+          "ave_expr": 8.444,
+          "stat": 7.526,
+          "p_adj": 0.001572
+        },
+        "MX1": {
+          "effect": 1.697,
+          "ave_expr": 7.538,
+          "stat": 5.433,
+          "p_adj": 0.01526
+        },
+        "ACTB": null,
+        "GAPDH": {
+          "effect": -0.2362,
+          "ave_expr": 7.412,
+          "stat": -0.8291,
+          "p_adj": 0.9491
+        }
+      },
+      "tail": {
+        "n_shown": 17,
+        "n_eligible": 55,
+        "rule": "p_adj < 0.05, ranked by |stat|, up to 15 per direction"
+      },
+      "trust": [
+        {
+          "check": "pvalue_distribution",
+          "status": "pass",
+          "note": "non-increasing from the first bin, flat on the right"
+        }
+      ]
+    }
+  ]
+}

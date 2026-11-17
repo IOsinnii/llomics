@@ -1,0 +1,280 @@
+{
+  "llomics": "0.1",
+  "method": "dge",
+  "run": {
+    "analysis_id": "sex_imbalance",
+    "question": "Which genes respond to the drug?",
+    "tool": "limma 3.66.0",
+    "steps": ["simulated log2 expression over human gene symbols", "lmFit ~ 0 + group + batch", "contrasts.fit treated - control", "eBayes(trend = TRUE)"],
+    "filters": [
+      {
+        "rule": "p_adj < 0.05",
+        "why": "FDR control"
+      },
+      {
+        "rule": "top 15 by |stat| per direction; never padded",
+        "why": "payload size"
+      }
+    ],
+    "p_floor": 1e-300,
+    "n_p_values_floored": 0,
+    "design_columns": ["control", "treated", "batch_b2"],
+    "df_prior_median": 7.281,
+    "df_prior_infinite": false,
+    "source_tables": {
+      "note": "benchmark payload; the full table is not kept"
+    }
+  },
+  "dataset": {
+    "n_observations": 12,
+    "observation_type": "sample",
+    "n_features": 3958,
+    "reference": {
+      "n_contrasts": 1
+    }
+  },
+  "trust": [
+    {
+      "check": "replicates",
+      "status": "pass",
+      "value": 6,
+      "note": "samples per group: control=6, treated=6; pass needs at least 3"
+    },
+    {
+      "check": "pvalue_distribution",
+      "status": "pass",
+      "note": "treated_vs_control: non-increasing from the first bin, flat on the right"
+    },
+    {
+      "check": "batch_confounding",
+      "status": "pass",
+      "value": {
+        "control": {
+          "b1": 3,
+          "b2": 3
+        },
+        "treated": {
+          "b1": 3,
+          "b2": 3
+        }
+      },
+      "note": "batch is in the design and every group occurs in every batch"
+    },
+    {
+      "check": "multiple_testing",
+      "status": "pass",
+      "note": "Benjamini-Hochberg within the one contrast reported"
+    },
+    {
+      "check": "mean_variance",
+      "status": "pass",
+      "note": "detected: eBayes(trend = TRUE)"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "treated_vs_control",
+      "unit_type": "contrast",
+      "definition": "drug 4 weeks - placebo, whole blood, adjusted for batch; positive effect = higher on drug",
+      "contrast_weights": {
+        "control": -1,
+        "treated": 1
+      },
+      "size": {
+        "n_tested": 3958,
+        "n_per_group": {
+          "control": 6,
+          "treated": 6
+        }
+      },
+      "facts": {
+        "fdr": 0.05,
+        "effect_cutoff": 1,
+        "n_hits": 22,
+        "n_up": 5,
+        "n_down": 17,
+        "n_up_effect": 3,
+        "n_down_effect": 16,
+        "n_near_miss": 0,
+        "n_p_adj_missing": 0,
+        "n_uninformative": 0,
+        "pi0": 0.983,
+        "p_histogram": [447, 377, 398, 384, 406, 404, 382, 394, 388, 378],
+        "effect_quantiles": {
+          "q01": -0.577,
+          "q25": -0.124,
+          "q50": -0.00241,
+          "q75": 0.125,
+          "q99": 0.538
+        }
+      },
+      "top_features": {
+        "up": [
+          {
+            "feature": "TSIX",
+            "effect": 6.487,
+            "ave_expr": 4.29,
+            "stat": 42.79,
+            "p_adj": 4.824e-15
+          },
+          {
+            "feature": "JPX",
+            "effect": 7.946,
+            "ave_expr": 4.988,
+            "stat": 36.78,
+            "p_adj": 2.337e-14
+          },
+          {
+            "feature": "XIST",
+            "effect": 6.743,
+            "ave_expr": 4.27,
+            "stat": 30.01,
+            "p_adj": 3.11e-13
+          },
+          {
+            "feature": "PUDP",
+            "effect": 0.8554,
+            "ave_expr": 5.293,
+            "stat": 5.742,
+            "p_adj": 0.006227
+          },
+          {
+            "feature": "KDM6A",
+            "effect": 0.8291,
+            "ave_expr": 5.708,
+            "stat": 5.442,
+            "p_adj": 0.01064
+          }
+        ],
+        "down": [
+          {
+            "feature": "UTY",
+            "effect": -6.088,
+            "ave_expr": 4.122,
+            "stat": -45.28,
+            "p_adj": 3.338e-15
+          },
+          {
+            "feature": "ZFY",
+            "effect": -6.39,
+            "ave_expr": 4.334,
+            "stat": -44.89,
+            "p_adj": 3.338e-15
+          },
+          {
+            "feature": "NLGN4Y",
+            "effect": -6.503,
+            "ave_expr": 4.312,
+            "stat": -41.28,
+            "p_adj": 5.459e-15
+          },
+          {
+            "feature": "USP9Y",
+            "effect": -6.203,
+            "ave_expr": 4.15,
+            "stat": -40.78,
+            "p_adj": 5.459e-15
+          },
+          {
+            "feature": "DDX3Y",
+            "effect": -6.262,
+            "ave_expr": 4.151,
+            "stat": -40.68,
+            "p_adj": 5.459e-15
+          },
+          {
+            "feature": "RPS4Y1",
+            "effect": -6.654,
+            "ave_expr": 4.372,
+            "stat": -36.51,
+            "p_adj": 2.337e-14
+          },
+          {
+            "feature": "PRKY",
+            "effect": -6.011,
+            "ave_expr": 3.842,
+            "stat": -35.6,
+            "p_adj": 3.125e-14
+          },
+          {
+            "feature": "KDM5D",
+            "effect": -6.409,
+            "ave_expr": 4.068,
+            "stat": -33.67,
+            "p_adj": 6.899e-14
+          },
+          {
+            "feature": "TTTY14",
+            "effect": -6.398,
+            "ave_expr": 4.275,
+            "stat": -30.72,
+            "p_adj": 2.728e-13
+          },
+          {
+            "feature": "TTTY15",
+            "effect": -4.991,
+            "ave_expr": 3.459,
+            "stat": -30.34,
+            "p_adj": 3.034e-13
+          },
+          {
+            "feature": "TXLNGY",
+            "effect": -7.439,
+            "ave_expr": 4.77,
+            "stat": -30.2,
+            "p_adj": 3.034e-13
+          },
+          {
+            "feature": "TMSB4Y",
+            "effect": -6.878,
+            "ave_expr": 4.482,
+            "stat": -23.9,
+            "p_adj": 1.094e-11
+          },
+          {
+            "feature": "TBL1Y",
+            "effect": -5.086,
+            "ave_expr": 3.535,
+            "stat": -19.17,
+            "p_adj": 3.314e-10
+          },
+          {
+            "feature": "EIF1AY",
+            "effect": -4.641,
+            "ave_expr": 3.233,
+            "stat": -13.54,
+            "p_adj": 6.461e-08
+          },
+          {
+            "feature": "RNF130",
+            "effect": -1.191,
+            "ave_expr": 7.223,
+            "stat": -5.007,
+            "p_adj": 0.02427
+          }
+        ]
+      },
+      "panel": {
+        "ACTB": null,
+        "GAPDH": {
+          "effect": -0.1597,
+          "ave_expr": 7.223,
+          "stat": -0.8492,
+          "p_adj": 0.976
+        }
+      },
+      "tail": {
+        "n_shown": 20,
+        "n_eligible": 22,
+        "rule": "p_adj < 0.05, ranked by |stat|, up to 15 per direction"
+      },
+      "trust": [
+        {
+          "check": "pvalue_distribution",
+          "status": "pass",
+          "note": "non-increasing from the first bin, flat on the right"
+        }
+      ]
+    }
+  ]
+}

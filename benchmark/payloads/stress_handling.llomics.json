@@ -1,0 +1,244 @@
+{
+  "llomics": "0.1",
+  "method": "dge",
+  "run": {
+    "analysis_id": "stress_handling",
+    "question": "Which genes depend on the knocked-out gene?",
+    "tool": "limma 3.66.0",
+    "steps": ["simulated log2 expression over human gene symbols", "lmFit ~ 0 + group + batch", "contrasts.fit treated - control", "eBayes(trend = TRUE)"],
+    "filters": [
+      {
+        "rule": "p_adj < 0.05",
+        "why": "FDR control"
+      },
+      {
+        "rule": "top 15 by |stat| per direction; never padded",
+        "why": "payload size"
+      }
+    ],
+    "p_floor": 1e-300,
+    "n_p_values_floored": 0,
+    "design_columns": ["control", "treated", "batch_b2"],
+    "df_prior_median": 7.884,
+    "df_prior_infinite": false,
+    "source_tables": {
+      "note": "benchmark payload; the full table is not kept"
+    }
+  },
+  "dataset": {
+    "n_observations": 12,
+    "observation_type": "sample",
+    "n_features": 3958,
+    "reference": {
+      "n_contrasts": 1
+    }
+  },
+  "trust": [
+    {
+      "check": "replicates",
+      "status": "pass",
+      "value": 6,
+      "note": "samples per group: control=6, treated=6; pass needs at least 3"
+    },
+    {
+      "check": "pvalue_distribution",
+      "status": "pass",
+      "note": "treated_vs_control: non-increasing from the first bin, flat on the right"
+    },
+    {
+      "check": "batch_confounding",
+      "status": "pass",
+      "value": {
+        "control": {
+          "b1": 3,
+          "b2": 3
+        },
+        "treated": {
+          "b1": 3,
+          "b2": 3
+        }
+      },
+      "note": "batch is in the design and every group occurs in every batch"
+    },
+    {
+      "check": "multiple_testing",
+      "status": "pass",
+      "note": "Benjamini-Hochberg within the one contrast reported"
+    },
+    {
+      "check": "mean_variance",
+      "status": "pass",
+      "note": "detected: eBayes(trend = TRUE)"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "treated_vs_control",
+      "unit_type": "contrast",
+      "definition": "knockout - wild type, sorted liver macrophages, adjusted for batch; positive effect = higher in knockout",
+      "contrast_weights": {
+        "control": -1,
+        "treated": 1
+      },
+      "size": {
+        "n_tested": 3958,
+        "n_per_group": {
+          "control": 6,
+          "treated": 6
+        }
+      },
+      "facts": {
+        "fdr": 0.05,
+        "effect_cutoff": 1,
+        "n_hits": 45,
+        "n_up": 45,
+        "n_down": 0,
+        "n_up_effect": 44,
+        "n_down_effect": 0,
+        "n_near_miss": 4,
+        "n_p_adj_missing": 0,
+        "n_uninformative": 0,
+        "pi0": 0.975,
+        "p_histogram": [458, 378, 410, 403, 379, 383, 386, 367, 406, 388],
+        "effect_quantiles": {
+          "q01": -0.519,
+          "q25": -0.119,
+          "q50": 0.00715,
+          "q75": 0.131,
+          "q99": 1.35
+        }
+      },
+      "top_features": {
+        "up": [
+          {
+            "feature": "JUNB",
+            "effect": 3.16,
+            "ave_expr": 12.04,
+            "stat": 19.89,
+            "p_adj": 1.478e-09
+          },
+          {
+            "feature": "JUN",
+            "effect": 2.691,
+            "ave_expr": 11.53,
+            "stat": 18,
+            "p_adj": 3.014e-09
+          },
+          {
+            "feature": "DNAJA1",
+            "effect": 2.426,
+            "ave_expr": 9.763,
+            "stat": 17.78,
+            "p_adj": 3.014e-09
+          },
+          {
+            "feature": "IER2",
+            "effect": 2.639,
+            "ave_expr": 9.861,
+            "stat": 17.28,
+            "p_adj": 3.581e-09
+          },
+          {
+            "feature": "EGR1",
+            "effect": 2.896,
+            "ave_expr": 11.38,
+            "stat": 16.83,
+            "p_adj": 4.369e-09
+          },
+          {
+            "feature": "PPP1R15A",
+            "effect": 2.657,
+            "ave_expr": 8.962,
+            "stat": 16.36,
+            "p_adj": 4.999e-09
+          },
+          {
+            "feature": "ATF3",
+            "effect": 2.299,
+            "ave_expr": 4.584,
+            "stat": 16.34,
+            "p_adj": 4.999e-09
+          },
+          {
+            "feature": "KLF4",
+            "effect": 2.495,
+            "ave_expr": 8.56,
+            "stat": 14.99,
+            "p_adj": 1.47e-08
+          },
+          {
+            "feature": "FOSB",
+            "effect": 2.877,
+            "ave_expr": 12.22,
+            "stat": 14.98,
+            "p_adj": 1.47e-08
+          },
+          {
+            "feature": "HSPB1",
+            "effect": 1.956,
+            "ave_expr": 4.101,
+            "stat": 14.93,
+            "p_adj": 1.47e-08
+          },
+          {
+            "feature": "JUND",
+            "effect": 2.38,
+            "ave_expr": 5.278,
+            "stat": 14.64,
+            "p_adj": 1.806e-08
+          },
+          {
+            "feature": "EGR2",
+            "effect": 2.359,
+            "ave_expr": 5.656,
+            "stat": 14.52,
+            "p_adj": 1.821e-08
+          },
+          {
+            "feature": "BTG2",
+            "effect": 2.555,
+            "ave_expr": 6.676,
+            "stat": 14.48,
+            "p_adj": 1.821e-08
+          },
+          {
+            "feature": "HSPH1",
+            "effect": 2.313,
+            "ave_expr": 8.614,
+            "stat": 13.67,
+            "p_adj": 4.168e-08
+          },
+          {
+            "feature": "DUSP2",
+            "effect": 2.447,
+            "ave_expr": 4.252,
+            "stat": 13.43,
+            "p_adj": 5.118e-08
+          }
+        ],
+        "down": []
+      },
+      "panel": {
+        "ACTB": null,
+        "GAPDH": {
+          "effect": -0.008513,
+          "ave_expr": 7.252,
+          "stat": -0.04767,
+          "p_adj": 0.9963
+        }
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": 45,
+        "rule": "p_adj < 0.05, ranked by |stat|, up to 15 per direction"
+      },
+      "trust": [
+        {
+          "check": "pvalue_distribution",
+          "status": "pass",
+          "note": "non-increasing from the first bin, flat on the right"
+        }
+      ]
+    }
+  ]
+}

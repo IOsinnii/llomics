@@ -1,0 +1,256 @@
+{
+  "llomics": "0.1",
+  "method": "dge",
+  "run": {
+    "analysis_id": "clean_interferon",
+    "question": "Which genes respond to interferon-beta?",
+    "tool": "limma 3.66.0",
+    "steps": ["simulated log2 expression over human gene symbols", "lmFit ~ 0 + group + batch", "contrasts.fit treated - control", "eBayes(trend = TRUE)"],
+    "filters": [
+      {
+        "rule": "p_adj < 0.05",
+        "why": "FDR control"
+      },
+      {
+        "rule": "top 15 by |stat| per direction; never padded",
+        "why": "payload size"
+      }
+    ],
+    "p_floor": 1e-300,
+    "n_p_values_floored": 0,
+    "design_columns": ["control", "treated", "batch_b2"],
+    "df_prior_median": 7.646,
+    "df_prior_infinite": false,
+    "source_tables": {
+      "note": "benchmark payload; the full table is not kept"
+    }
+  },
+  "dataset": {
+    "n_observations": 12,
+    "observation_type": "sample",
+    "n_features": 3958,
+    "reference": {
+      "n_contrasts": 1
+    }
+  },
+  "trust": [
+    {
+      "check": "replicates",
+      "status": "pass",
+      "value": 6,
+      "note": "samples per group: control=6, treated=6; pass needs at least 3"
+    },
+    {
+      "check": "pvalue_distribution",
+      "status": "pass",
+      "note": "treated_vs_control: non-increasing from the first bin, flat on the right"
+    },
+    {
+      "check": "batch_confounding",
+      "status": "pass",
+      "value": {
+        "control": {
+          "b1": 3,
+          "b2": 3
+        },
+        "treated": {
+          "b1": 3,
+          "b2": 3
+        }
+      },
+      "note": "batch is in the design and every group occurs in every batch"
+    },
+    {
+      "check": "multiple_testing",
+      "status": "pass",
+      "note": "Benjamini-Hochberg within the one contrast reported"
+    },
+    {
+      "check": "mean_variance",
+      "status": "pass",
+      "note": "detected: eBayes(trend = TRUE)"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "treated_vs_control",
+      "unit_type": "contrast",
+      "definition": "interferon-beta 6 h - untreated, primary fibroblasts, adjusted for batch; positive effect = higher after interferon",
+      "contrast_weights": {
+        "control": -1,
+        "treated": 1
+      },
+      "size": {
+        "n_tested": 3958,
+        "n_per_group": {
+          "control": 6,
+          "treated": 6
+        }
+      },
+      "facts": {
+        "fdr": 0.05,
+        "effect_cutoff": 1,
+        "n_hits": 57,
+        "n_up": 57,
+        "n_down": 0,
+        "n_up_effect": 55,
+        "n_down_effect": 0,
+        "n_near_miss": 4,
+        "n_p_adj_missing": 0,
+        "n_uninformative": 0,
+        "pi0": 0.986,
+        "p_histogram": [432, 389, 379, 384, 423, 386, 379, 421, 409, 356],
+        "effect_quantiles": {
+          "q01": -0.493,
+          "q25": -0.12,
+          "q50": 0.0046,
+          "q75": 0.128,
+          "q99": 1.93
+        }
+      },
+      "top_features": {
+        "up": [
+          {
+            "feature": "EIF2AK2",
+            "effect": 2.724,
+            "ave_expr": 9.072,
+            "stat": 21.33,
+            "p_adj": 6.343e-10
+          },
+          {
+            "feature": "STAT1",
+            "effect": 2.853,
+            "ave_expr": 8.109,
+            "stat": 19.32,
+            "p_adj": 1.175e-09
+          },
+          {
+            "feature": "DTX3L",
+            "effect": 2.99,
+            "ave_expr": 9.642,
+            "stat": 19.16,
+            "p_adj": 1.175e-09
+          },
+          {
+            "feature": "GBP4",
+            "effect": 3.004,
+            "ave_expr": 7.343,
+            "stat": 18.7,
+            "p_adj": 1.299e-09
+          },
+          {
+            "feature": "OAS2",
+            "effect": 2.748,
+            "ave_expr": 10.58,
+            "stat": 17.28,
+            "p_adj": 3.082e-09
+          },
+          {
+            "feature": "OAS1",
+            "effect": 3.2,
+            "ave_expr": 12.48,
+            "stat": 17.27,
+            "p_adj": 3.082e-09
+          },
+          {
+            "feature": "IFI44",
+            "effect": 2.601,
+            "ave_expr": 9.295,
+            "stat": 17.1,
+            "p_adj": 3.086e-09
+          },
+          {
+            "feature": "IRF7",
+            "effect": 2.832,
+            "ave_expr": 10.41,
+            "stat": 16.69,
+            "p_adj": 3.778e-09
+          },
+          {
+            "feature": "PARP9",
+            "effect": 2.561,
+            "ave_expr": 7.187,
+            "stat": 16.61,
+            "p_adj": 3.778e-09
+          },
+          {
+            "feature": "OAS3",
+            "effect": 2.594,
+            "ave_expr": 11.64,
+            "stat": 16.41,
+            "p_adj": 4.106e-09
+          },
+          {
+            "feature": "MX1",
+            "effect": 2.445,
+            "ave_expr": 7.58,
+            "stat": 16.3,
+            "p_adj": 4.18e-09
+          },
+          {
+            "feature": "IFIT2",
+            "effect": 2.631,
+            "ave_expr": 12.35,
+            "stat": 15.99,
+            "p_adj": 5.184e-09
+          },
+          {
+            "feature": "TRIM22",
+            "effect": 2.75,
+            "ave_expr": 9.975,
+            "stat": 15.69,
+            "p_adj": 6.209e-09
+          },
+          {
+            "feature": "DDX60",
+            "effect": 2.368,
+            "ave_expr": 7.02,
+            "stat": 15.65,
+            "p_adj": 6.209e-09
+          },
+          {
+            "feature": "CMPK2",
+            "effect": 2.388,
+            "ave_expr": 8.634,
+            "stat": 15.25,
+            "p_adj": 8.626e-09
+          }
+        ],
+        "down": []
+      },
+      "panel": {
+        "ISG15": {
+          "effect": 1.979,
+          "ave_expr": 8.134,
+          "stat": 10.76,
+          "p_adj": 6.986e-07
+        },
+        "MX1": {
+          "effect": 2.445,
+          "ave_expr": 7.58,
+          "stat": 16.3,
+          "p_adj": 4.18e-09
+        },
+        "ACTB": null,
+        "GAPDH": {
+          "effect": -0.3316,
+          "ave_expr": 7.349,
+          "stat": -1.824,
+          "p_adj": 0.8932
+        }
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": 57,
+        "rule": "p_adj < 0.05, ranked by |stat|, up to 15 per direction"
+      },
+      "trust": [
+        {
+          "check": "pvalue_distribution",
+          "status": "pass",
+          "note": "non-increasing from the first bin, flat on the right"
+        }
+      ]
+    }
+  ]
+}

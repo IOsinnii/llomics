@@ -1,0 +1,240 @@
+{
+  "llomics": "0.1",
+  "method": "dge",
+  "run": {
+    "analysis_id": "composition",
+    "question": "Which hepatocyte genes respond to the diet?",
+    "tool": "limma 3.66.0",
+    "steps": ["simulated log2 expression over human gene symbols", "lmFit ~ 0 + group + batch", "contrasts.fit treated - control", "eBayes(trend = TRUE)"],
+    "filters": [
+      {
+        "rule": "p_adj < 0.05",
+        "why": "FDR control"
+      },
+      {
+        "rule": "top 15 by |stat| per direction; never padded",
+        "why": "payload size"
+      }
+    ],
+    "p_floor": 1e-300,
+    "n_p_values_floored": 0,
+    "design_columns": ["control", "treated", "batch_b2"],
+    "df_prior_median": 7.439,
+    "df_prior_infinite": false,
+    "source_tables": {
+      "note": "benchmark payload; the full table is not kept"
+    }
+  },
+  "dataset": {
+    "n_observations": 12,
+    "observation_type": "sample",
+    "n_features": 3958,
+    "reference": {
+      "n_contrasts": 1
+    }
+  },
+  "trust": [
+    {
+      "check": "replicates",
+      "status": "pass",
+      "value": 6,
+      "note": "samples per group: control=6, treated=6; pass needs at least 3"
+    },
+    {
+      "check": "pvalue_distribution",
+      "status": "pass",
+      "note": "treated_vs_control: non-increasing from the first bin, flat on the right"
+    },
+    {
+      "check": "batch_confounding",
+      "status": "pass",
+      "value": {
+        "control": {
+          "b1": 3,
+          "b2": 3
+        },
+        "treated": {
+          "b1": 3,
+          "b2": 3
+        }
+      },
+      "note": "batch is in the design and every group occurs in every batch"
+    },
+    {
+      "check": "multiple_testing",
+      "status": "pass",
+      "note": "Benjamini-Hochberg within the one contrast reported"
+    },
+    {
+      "check": "mean_variance",
+      "status": "pass",
+      "note": "detected: eBayes(trend = TRUE)"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "treated_vs_control",
+      "unit_type": "contrast",
+      "definition": "high-fat diet 12 weeks - chow, bulk liver tissue, adjusted for batch; positive effect = higher on high-fat diet",
+      "contrast_weights": {
+        "control": -1,
+        "treated": 1
+      },
+      "size": {
+        "n_tested": 3958,
+        "n_per_group": {
+          "control": 6,
+          "treated": 6
+        }
+      },
+      "facts": {
+        "fdr": 0.05,
+        "effect_cutoff": 1,
+        "n_hits": 43,
+        "n_up": 43,
+        "n_down": 0,
+        "n_up_effect": 43,
+        "n_down_effect": 0,
+        "n_near_miss": 4,
+        "n_p_adj_missing": 0,
+        "n_uninformative": 0,
+        "pi0": 0.967,
+        "p_histogram": [442, 423, 380, 399, 401, 386, 407, 371, 385, 364],
+        "effect_quantiles": {
+          "q01": -0.503,
+          "q25": -0.13,
+          "q50": -0.0011,
+          "q75": 0.124,
+          "q99": 1.37
+        }
+      },
+      "top_features": {
+        "up": [
+          {
+            "feature": "MS4A1",
+            "effect": 2.641,
+            "ave_expr": 8.694,
+            "stat": 15.79,
+            "p_adj": 6.833e-08
+          },
+          {
+            "feature": "CD3D",
+            "effect": 2.357,
+            "ave_expr": 10.58,
+            "stat": 15.39,
+            "p_adj": 6.833e-08
+          },
+          {
+            "feature": "CD8A",
+            "effect": 2.583,
+            "ave_expr": 8.123,
+            "stat": 14.59,
+            "p_adj": 1.025e-07
+          },
+          {
+            "feature": "PTPRC",
+            "effect": 2.523,
+            "ave_expr": 10.19,
+            "stat": 14.29,
+            "p_adj": 1.025e-07
+          },
+          {
+            "feature": "CD19",
+            "effect": 2.2,
+            "ave_expr": 4.26,
+            "stat": 14.12,
+            "p_adj": 1.025e-07
+          },
+          {
+            "feature": "CD5",
+            "effect": 2.224,
+            "ave_expr": 6.358,
+            "stat": 13.93,
+            "p_adj": 1.04e-07
+          },
+          {
+            "feature": "CCL5",
+            "effect": 2.022,
+            "ave_expr": 7.695,
+            "stat": 13.8,
+            "p_adj": 1.04e-07
+          },
+          {
+            "feature": "ITK",
+            "effect": 1.904,
+            "ave_expr": 7.833,
+            "stat": 13.45,
+            "p_adj": 1.22e-07
+          },
+          {
+            "feature": "CD3G",
+            "effect": 2.288,
+            "ave_expr": 6.228,
+            "stat": 13.38,
+            "p_adj": 1.22e-07
+          },
+          {
+            "feature": "CXCR4",
+            "effect": 2.207,
+            "ave_expr": 8.089,
+            "stat": 13.34,
+            "p_adj": 1.22e-07
+          },
+          {
+            "feature": "LTB",
+            "effect": 2.249,
+            "ave_expr": 10.2,
+            "stat": 12.75,
+            "p_adj": 2.17e-07
+          },
+          {
+            "feature": "CD3E",
+            "effect": 1.902,
+            "ave_expr": 10.61,
+            "stat": 12.58,
+            "p_adj": 2.449e-07
+          },
+          {
+            "feature": "CD48",
+            "effect": 1.683,
+            "ave_expr": 9.032,
+            "stat": 11.31,
+            "p_adj": 1.04e-06
+          },
+          {
+            "feature": "CD7",
+            "effect": 1.748,
+            "ave_expr": 11.75,
+            "stat": 11.29,
+            "p_adj": 1.04e-06
+          },
+          {
+            "feature": "TRBC1",
+            "effect": 2.375,
+            "ave_expr": 6.055,
+            "stat": 11.2,
+            "p_adj": 1.099e-06
+          }
+        ],
+        "down": []
+      },
+      "panel": {
+        "ALB": null,
+        "APOA1": null,
+        "ACTB": null
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": 43,
+        "rule": "p_adj < 0.05, ranked by |stat|, up to 15 per direction"
+      },
+      "trust": [
+        {
+          "check": "pvalue_distribution",
+          "status": "pass",
+          "note": "non-increasing from the first bin, flat on the right"
+        }
+      ]
+    }
+  ]
+}

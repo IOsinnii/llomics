@@ -1,0 +1,350 @@
+{
+  "llomics": "0.1",
+  "method": "dge",
+  "run": {
+    "analysis_id": "technical_replicates",
+    "question": "Which genes respond to compound Y?",
+    "tool": "limma 3.66.0",
+    "steps": ["simulated log2 expression over human gene symbols", "lmFit ~ 0 + group + batch", "contrasts.fit treated - control", "eBayes(trend = TRUE)"],
+    "filters": [
+      {
+        "rule": "p_adj < 0.05",
+        "why": "FDR control"
+      },
+      {
+        "rule": "top 15 by |stat| per direction; never padded",
+        "why": "payload size"
+      }
+    ],
+    "p_floor": 1e-300,
+    "n_p_values_floored": 0,
+    "design_columns": ["control", "treated", "batch_b2"],
+    "df_prior_median": 4.775,
+    "df_prior_infinite": false,
+    "source_tables": {
+      "note": "benchmark payload; the full table is not kept"
+    }
+  },
+  "dataset": {
+    "n_observations": 12,
+    "observation_type": "sample",
+    "n_features": 3958,
+    "reference": {
+      "n_contrasts": 1
+    }
+  },
+  "trust": [
+    {
+      "check": "replicates",
+      "status": "pass",
+      "value": 6,
+      "note": "samples per group: control=6, treated=6; pass needs at least 3"
+    },
+    {
+      "check": "pvalue_distribution",
+      "status": "pass",
+      "note": "treated_vs_control: non-increasing from the first bin, flat on the right"
+    },
+    {
+      "check": "batch_confounding",
+      "status": "pass",
+      "value": {
+        "control": {
+          "b1": 3,
+          "b2": 3
+        },
+        "treated": {
+          "b1": 3,
+          "b2": 3
+        }
+      },
+      "note": "batch is in the design and every group occurs in every batch"
+    },
+    {
+      "check": "multiple_testing",
+      "status": "pass",
+      "note": "Benjamini-Hochberg within the one contrast reported"
+    },
+    {
+      "check": "mean_variance",
+      "status": "pass",
+      "note": "detected: eBayes(trend = TRUE)"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "treated_vs_control",
+      "unit_type": "contrast",
+      "definition": "compound Y 6 h - vehicle, adjusted for batch; positive effect = higher with compound Y",
+      "contrast_weights": {
+        "control": -1,
+        "treated": 1
+      },
+      "size": {
+        "n_tested": 3958,
+        "n_per_group": {
+          "control": 6,
+          "treated": 6
+        }
+      },
+      "facts": {
+        "fdr": 0.05,
+        "effect_cutoff": 1,
+        "n_hits": 118,
+        "n_up": 51,
+        "n_down": 67,
+        "n_up_effect": 6,
+        "n_down_effect": 5,
+        "n_near_miss": 113,
+        "n_p_adj_missing": 0,
+        "n_uninformative": 0,
+        "pi0": 0.674,
+        "p_histogram": [1095, 490, 412, 348, 280, 282, 250, 260, 276, 265],
+        "effect_quantiles": {
+          "q01": -0.746,
+          "q25": -0.194,
+          "q50": -0.00978,
+          "q75": 0.168,
+          "q99": 0.696
+        }
+      },
+      "top_features": {
+        "up": [
+          {
+            "feature": "ZNF775",
+            "effect": 1.05,
+            "ave_expr": 5.488,
+            "stat": 7.726,
+            "p_adj": 0.005224
+          },
+          {
+            "feature": "CHMP7",
+            "effect": 0.9014,
+            "ave_expr": 6.651,
+            "stat": 6.802,
+            "p_adj": 0.007379
+          },
+          {
+            "feature": "INSR",
+            "effect": 0.9069,
+            "ave_expr": 8.474,
+            "stat": 6.509,
+            "p_adj": 0.009859
+          },
+          {
+            "feature": "CYP2J2",
+            "effect": 1.049,
+            "ave_expr": 4.28,
+            "stat": 6.089,
+            "p_adj": 0.01405
+          },
+          {
+            "feature": "ID4",
+            "effect": 0.6334,
+            "ave_expr": 8.445,
+            "stat": 5.913,
+            "p_adj": 0.01453
+          },
+          {
+            "feature": "SYCP2",
+            "effect": 0.7486,
+            "ave_expr": 8.153,
+            "stat": 5.796,
+            "p_adj": 0.01505
+          },
+          {
+            "feature": "FANCB",
+            "effect": 0.8947,
+            "ave_expr": 6.318,
+            "stat": 5.645,
+            "p_adj": 0.01744
+          },
+          {
+            "feature": "SIGLEC10",
+            "effect": 0.5948,
+            "ave_expr": 5.438,
+            "stat": 5.522,
+            "p_adj": 0.01744
+          },
+          {
+            "feature": "FBXO7",
+            "effect": 0.9293,
+            "ave_expr": 4.094,
+            "stat": 5.494,
+            "p_adj": 0.01744
+          },
+          {
+            "feature": "CLEC4G",
+            "effect": 0.586,
+            "ave_expr": 5.839,
+            "stat": 5.342,
+            "p_adj": 0.01976
+          },
+          {
+            "feature": "ZNF624",
+            "effect": 0.5665,
+            "ave_expr": 10.78,
+            "stat": 5.297,
+            "p_adj": 0.02006
+          },
+          {
+            "feature": "CDK9",
+            "effect": 0.6582,
+            "ave_expr": 8.913,
+            "stat": 5.171,
+            "p_adj": 0.02114
+          },
+          {
+            "feature": "RORC",
+            "effect": 0.5299,
+            "ave_expr": 7.211,
+            "stat": 5.144,
+            "p_adj": 0.02114
+          },
+          {
+            "feature": "NDUFAF4",
+            "effect": 0.5278,
+            "ave_expr": 7.101,
+            "stat": 5.06,
+            "p_adj": 0.02114
+          },
+          {
+            "feature": "NCF2",
+            "effect": 1.043,
+            "ave_expr": 8.491,
+            "stat": 5.052,
+            "p_adj": 0.02114
+          }
+        ],
+        "down": [
+          {
+            "feature": "RPGR",
+            "effect": -0.7836,
+            "ave_expr": 8.306,
+            "stat": -7.624,
+            "p_adj": 0.005224
+          },
+          {
+            "feature": "UGGT1",
+            "effect": -0.9061,
+            "ave_expr": 10.33,
+            "stat": -7.172,
+            "p_adj": 0.005694
+          },
+          {
+            "feature": "TRPV6",
+            "effect": -0.9815,
+            "ave_expr": 4.58,
+            "stat": -7.11,
+            "p_adj": 0.005694
+          },
+          {
+            "feature": "UNKL",
+            "effect": -0.8328,
+            "ave_expr": 4.292,
+            "stat": -6.258,
+            "p_adj": 0.01276
+          },
+          {
+            "feature": "RUNX3",
+            "effect": -0.8933,
+            "ave_expr": 8.466,
+            "stat": -6.051,
+            "p_adj": 0.01405
+          },
+          {
+            "feature": "WDR61",
+            "effect": -1.073,
+            "ave_expr": 9.796,
+            "stat": -5.916,
+            "p_adj": 0.01453
+          },
+          {
+            "feature": "WNT5A",
+            "effect": -0.599,
+            "ave_expr": 8.181,
+            "stat": -5.859,
+            "p_adj": 0.01464
+          },
+          {
+            "feature": "MCM8",
+            "effect": -0.7794,
+            "ave_expr": 8.471,
+            "stat": -5.574,
+            "p_adj": 0.01744
+          },
+          {
+            "feature": "HIST1H2BG",
+            "effect": -0.5612,
+            "ave_expr": 6.209,
+            "stat": -5.531,
+            "p_adj": 0.01744
+          },
+          {
+            "feature": "THAP11",
+            "effect": -0.6517,
+            "ave_expr": 10.47,
+            "stat": -5.502,
+            "p_adj": 0.01744
+          },
+          {
+            "feature": "CRK",
+            "effect": -0.6242,
+            "ave_expr": 10.33,
+            "stat": -5.453,
+            "p_adj": 0.01785
+          },
+          {
+            "feature": "TFPI",
+            "effect": -0.5793,
+            "ave_expr": 3.544,
+            "stat": -5.413,
+            "p_adj": 0.01825
+          },
+          {
+            "feature": "HLF",
+            "effect": -0.6845,
+            "ave_expr": 6.292,
+            "stat": -5.285,
+            "p_adj": 0.02006
+          },
+          {
+            "feature": "SSR4",
+            "effect": -0.9282,
+            "ave_expr": 8.898,
+            "stat": -5.191,
+            "p_adj": 0.02114
+          },
+          {
+            "feature": "SPART",
+            "effect": -0.9273,
+            "ave_expr": 8.889,
+            "stat": -5.158,
+            "p_adj": 0.02114
+          }
+        ]
+      },
+      "panel": {
+        "ACTB": null,
+        "GAPDH": {
+          "effect": 0.09868,
+          "ave_expr": 7.406,
+          "stat": 0.6739,
+          "p_adj": 0.7628
+        }
+      },
+      "tail": {
+        "n_shown": 30,
+        "n_eligible": 118,
+        "rule": "p_adj < 0.05, ranked by |stat|, up to 15 per direction"
+      },
+      "trust": [
+        {
+          "check": "pvalue_distribution",
+          "status": "pass",
+          "note": "non-increasing from the first bin, flat on the right"
+        }
+      ]
+    }
+  ]
+}

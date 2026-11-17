@@ -1,0 +1,256 @@
+{
+  "llomics": "0.1",
+  "method": "dge",
+  "run": {
+    "analysis_id": "unmodelled_batch",
+    "question": "Which genes respond to interferon-beta?",
+    "tool": "limma 3.66.0",
+    "steps": ["simulated log2 expression over human gene symbols", "lmFit ~ 0 + group", "contrasts.fit treated - control", "eBayes(trend = TRUE)"],
+    "filters": [
+      {
+        "rule": "p_adj < 0.05",
+        "why": "FDR control"
+      },
+      {
+        "rule": "top 15 by |stat| per direction; never padded",
+        "why": "payload size"
+      }
+    ],
+    "p_floor": 1e-300,
+    "n_p_values_floored": 0,
+    "design_columns": ["control", "treated"],
+    "df_prior_median": 2.023,
+    "df_prior_infinite": false,
+    "source_tables": {
+      "note": "benchmark payload; the full table is not kept"
+    }
+  },
+  "dataset": {
+    "n_observations": 12,
+    "observation_type": "sample",
+    "n_features": 3958,
+    "reference": {
+      "n_contrasts": 1
+    }
+  },
+  "trust": [
+    {
+      "check": "replicates",
+      "status": "pass",
+      "value": 6,
+      "note": "samples per group: control=6, treated=6; pass needs at least 3"
+    },
+    {
+      "check": "pvalue_distribution",
+      "status": "warn",
+      "note": "treated_vs_control: bin 10 holds 721 p-values, more than 1.25x the first bin (252): p-values are not concentrated near 0, which points to a misspecified test or variance"
+    },
+    {
+      "check": "batch_confounding",
+      "status": "warn",
+      "value": {
+        "control": {
+          "b1": 3,
+          "b2": 3
+        },
+        "treated": {
+          "b1": 3,
+          "b2": 3
+        }
+      },
+      "note": "batch is not in the design"
+    },
+    {
+      "check": "multiple_testing",
+      "status": "pass",
+      "note": "Benjamini-Hochberg within the one contrast reported"
+    },
+    {
+      "check": "mean_variance",
+      "status": "pass",
+      "note": "detected: eBayes(trend = TRUE)"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "treated_vs_control",
+      "unit_type": "contrast",
+      "definition": "interferon-beta 6 h - untreated, primary fibroblasts; positive effect = higher after interferon",
+      "contrast_weights": {
+        "control": -1,
+        "treated": 1
+      },
+      "size": {
+        "n_tested": 3958,
+        "n_per_group": {
+          "control": 6,
+          "treated": 6
+        }
+      },
+      "facts": {
+        "fdr": 0.05,
+        "effect_cutoff": 1,
+        "n_hits": 52,
+        "n_up": 52,
+        "n_down": 0,
+        "n_up_effect": 52,
+        "n_down_effect": 0,
+        "n_near_miss": 0,
+        "n_p_adj_missing": 0,
+        "n_uninformative": 0,
+        "pi0": 1,
+        "p_histogram": [252, 242, 222, 274, 318, 327, 415, 528, 659, 721],
+        "effect_quantiles": {
+          "q01": -0.461,
+          "q25": -0.116,
+          "q50": 0.0146,
+          "q75": 0.14,
+          "q99": 2.03
+        }
+      },
+      "top_features": {
+        "up": [
+          {
+            "feature": "STAT1",
+            "effect": 2.933,
+            "ave_expr": 8.13,
+            "stat": 22.57,
+            "p_adj": 1.299e-07
+          },
+          {
+            "feature": "ISG15",
+            "effect": 3.13,
+            "ave_expr": 8.543,
+            "stat": 21.08,
+            "p_adj": 1.451e-07
+          },
+          {
+            "feature": "LY6E",
+            "effect": 2.599,
+            "ave_expr": 9.302,
+            "stat": 19.02,
+            "p_adj": 2.458e-07
+          },
+          {
+            "feature": "NMI",
+            "effect": 2.782,
+            "ave_expr": 10.12,
+            "stat": 18.99,
+            "p_adj": 2.458e-07
+          },
+          {
+            "feature": "EIF2AK2",
+            "effect": 2.453,
+            "ave_expr": 8.72,
+            "stat": 18.24,
+            "p_adj": 3.131e-07
+          },
+          {
+            "feature": "IFI6",
+            "effect": 2.87,
+            "ave_expr": 9.303,
+            "stat": 17.9,
+            "p_adj": 3.255e-07
+          },
+          {
+            "feature": "SAMD9",
+            "effect": 2.778,
+            "ave_expr": 11.33,
+            "stat": 17.31,
+            "p_adj": 4.113e-07
+          },
+          {
+            "feature": "GBP4",
+            "effect": 2.881,
+            "ave_expr": 7.342,
+            "stat": 15.56,
+            "p_adj": 1.232e-06
+          },
+          {
+            "feature": "ISG20",
+            "effect": 2.752,
+            "ave_expr": 8.184,
+            "stat": 15.25,
+            "p_adj": 1.377e-06
+          },
+          {
+            "feature": "MX1",
+            "effect": 2.378,
+            "ave_expr": 7.428,
+            "stat": 14.79,
+            "p_adj": 1.597e-06
+          },
+          {
+            "feature": "ADAR",
+            "effect": 2.709,
+            "ave_expr": 10.66,
+            "stat": 14.62,
+            "p_adj": 1.597e-06
+          },
+          {
+            "feature": "DTX3L",
+            "effect": 1.949,
+            "ave_expr": 9.204,
+            "stat": 14.58,
+            "p_adj": 1.597e-06
+          },
+          {
+            "feature": "PARP9",
+            "effect": 2.683,
+            "ave_expr": 7.266,
+            "stat": 14.55,
+            "p_adj": 1.597e-06
+          },
+          {
+            "feature": "TRIM21",
+            "effect": 3.222,
+            "ave_expr": 9.99,
+            "stat": 14.49,
+            "p_adj": 1.597e-06
+          },
+          {
+            "feature": "CMPK2",
+            "effect": 2.264,
+            "ave_expr": 8.482,
+            "stat": 14.09,
+            "p_adj": 2.047e-06
+          }
+        ],
+        "down": []
+      },
+      "panel": {
+        "ISG15": {
+          "effect": 3.13,
+          "ave_expr": 8.543,
+          "stat": 21.08,
+          "p_adj": 1.451e-07
+        },
+        "MX1": {
+          "effect": 2.378,
+          "ave_expr": 7.428,
+          "stat": 14.79,
+          "p_adj": 1.597e-06
+        },
+        "ACTB": null,
+        "GAPDH": {
+          "effect": 0.1503,
+          "ave_expr": 7.334,
+          "stat": 0.9546,
+          "p_adj": 0.9997
+        }
+      },
+      "tail": {
+        "n_shown": 15,
+        "n_eligible": 52,
+        "rule": "p_adj < 0.05, ranked by |stat|, up to 15 per direction"
+      },
+      "trust": [
+        {
+          "check": "pvalue_distribution",
+          "status": "warn",
+          "note": "bin 10 holds 721 p-values, more than 1.25x the first bin (252): p-values are not concentrated near 0, which points to a misspecified test or variance"
+        }
+      ]
+    }
+  ]
+}
