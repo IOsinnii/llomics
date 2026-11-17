@@ -22,6 +22,9 @@ same payload from the same table. Not yet done: the Bedrock call has not been ru
 endpoint, `pip install` of the Python package has not been tried, the CI workflow has not run, and
 PCA, GLM, lasso and PLS-DA have skills but no code. No licence has been chosen.
 
+New to package development? [HOW_IT_IS_BUILT.md](HOW_IT_IS_BUILT.md) walks through how this one
+was put together and lists what a PyPI or CRAN release still needs.
+
 ## The pattern
 
 ```text
