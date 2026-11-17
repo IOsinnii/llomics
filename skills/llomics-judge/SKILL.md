@@ -1,5 +1,6 @@
 ---
 name: llomics-judge
+license: MIT
 description: >
   How to consume an llomics payload: split each decision into measured facts (code) and judgments
   (model), ask typed questions of one unit at a time, and turn the answers into auto-accept or

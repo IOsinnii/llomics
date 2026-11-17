@@ -1,5 +1,6 @@
 ---
 name: llomics-synthesis
+license: MIT
 description: >
   Combine llomics payloads from several methods run on the same data (for example limma, lasso,
   PLS-DA, and PCA) into one evidence table per feature, and separate agreement that strengthens a

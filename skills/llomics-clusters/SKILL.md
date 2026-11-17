@@ -1,5 +1,6 @@
 ---
 name: llomics-clusters
+license: MIT
 description: >
   Build an llomics payload from clustering plus marker ranking (Scanpy rank_genes_groups, Seurat
   FindAllMarkers, or any one-vs-rest marker table): one state per cluster with size, QC facts

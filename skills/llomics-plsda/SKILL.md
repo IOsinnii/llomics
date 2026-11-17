@@ -1,5 +1,6 @@
 ---
 name: llomics-plsda
+license: MIT
 description: >
   Build an llomics payload from PLS-DA, sPLS-DA, or OPLS-DA (mixOmics, ropls, scikit-learn
   PLSRegression on dummy-coded classes): a model state with cross-validated performance and a

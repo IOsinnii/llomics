@@ -25,6 +25,9 @@ COPIES = {
         "python/llomics/llomics-panels.json",
         "r/llomics/inst/llomics-panels.json",
     ],
+    "LICENSE": [
+        "python/LICENSE",
+    ],
     "python/llomics/validate.py": [
         "skills/llomics-core/scripts/validate_payload.py",
         "r/llomics/inst/validate_payload.py",

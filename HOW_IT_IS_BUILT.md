@@ -234,8 +234,6 @@ were verified on this repository; the rest are known requirements not yet attemp
 
 | Missing | Why it blocks a release |
 | :--- | :--- |
-| A licence (*checked*: none exists) | Neither index accepts a package without one, and nobody may legally reuse the code |
-| Author and maintainer details | Both indexes require a named, reachable maintainer |
 | Sources for the technical gene panels | The lists in `llomics-panels.json` were compiled from general knowledge. A release needs a citation for each |
 | A run of the CI workflow | `.github/workflows/tests.yml` exists but has never executed |
 | A changelog and a versioning rule | Users need to know what changed. The contract version and the two package versions are separate numbers with no stated relation |
@@ -248,8 +246,8 @@ were verified on this repository; the rest are known requirements not yet attemp
 | :--- | :--- |
 | A successful build (*checked*: never built; this machine has no `setuptools`) | No wheel or source archive has been produced, so whether the two JSON data files are packed inside is unverified |
 | An install test | The package has only been imported from the source folder. A package that works there can still fail once installed |
-| Metadata in `pyproject.toml` (*checked*: no `readme`, `license`, `authors`, `classifiers`, `urls`) | PyPI shows an empty page and tools cannot tell which Python versions are supported |
-| README and licence inside `python/` | The archive is built from that folder, and both files sit one level above it |
+| Metadata in `pyproject.toml` (*checked*: licence and author are set; no `readme`, `classifiers`, `urls`) | PyPI shows an empty page and tools cannot tell which Python versions are supported |
+| A README inside `python/` | The archive is built from that folder. The licence is copied in by `tools/sync.py`; the README still sits one level above |
 | One source for the version (*checked*: `0.1.0` is written in both `pyproject.toml` and `__init__.py`) | Two copies will disagree after the first forgotten edit |
 | The ask step inside the package | `judge_bedrock.py` and the benchmark scorer are loose scripts. An installed package would not include them, and there are no command-line entry points |
 | Tests on more than one setup | Run so far on Python 3.13 and 3.11, on Windows only |
@@ -258,13 +256,13 @@ were verified on this repository; the rest are known requirements not yet attemp
 
 ### R, for CRAN
 
-`R CMD check --as-cran` was run on the package. As it stands it stops at the first step. With
-placeholder licence and author fields filled in, it finishes with 2 warnings and 1 note, and the
-package's own tests pass inside the check.
+`R CMD check --as-cran` was run on the package before the licence and author were added. It
+stopped at the first step. With placeholder licence and author fields, including a maintainer
+email, it finished with 2 warnings and 1 note, and the package's own tests passed inside the
+check. The licence, author and maintainer, with an email address, are now real, so this first error is resolved.
 
 | Missing | Why it blocks a release |
 | :--- | :--- |
-| `License`, `Author`, `Maintainer` in `DESCRIPTION` (*checked*: error, the check stops here) | Required fields |
 | Help pages (*checked*: warning, all 10 exported functions undocumented) | The source has roxygen comments, but `roxygen2` has never been run, so no `man/` pages exist. CRAN does not accept warnings |
 | `SeuratObject` in `Suggests` (*checked*: warning) | The tests load a dataset from it without declaring it |
 | Examples (*checked*: none) | CRAN expects a runnable example for exported functions |

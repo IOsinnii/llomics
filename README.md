@@ -20,7 +20,9 @@ The repository holds three things:
 differential table. Tests cover both packages, including a check that R and Python produce the
 same payload from the same table. Not yet done: the Bedrock call has not been run against a live
 endpoint, `pip install` of the Python package has not been tried, the CI workflow has not run, and
-PCA, GLM, lasso and PLS-DA have skills but no code. No licence has been chosen.
+PCA, GLM, lasso and PLS-DA have skills but no code.
+
+Licence: MIT. Author and maintainer: Ivan Osinnii.
 
 New to package development? [HOW_IT_IS_BUILT.md](HOW_IT_IS_BUILT.md) walks through how this one
 was put together and lists what a PyPI or CRAN release still needs.

@@ -1,5 +1,6 @@
 ---
 name: llomics-lasso
+license: MIT
 description: >
   Build an llomics payload from a lasso or elastic-net model (glmnet, cv.glmnet, scikit-learn
   LassoCV, ElasticNetCV, LogisticRegressionCV with an L1 penalty): one state per model at the

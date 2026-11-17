@@ -1,5 +1,6 @@
 ---
 name: llomics-limma
+license: MIT
 description: >
   Build an llomics payload from a feature-wise differential analysis (limma, limma-voom, and the
   same-shaped tables from DESeq2 and edgeR): one state per contrast with hit counts, top up and

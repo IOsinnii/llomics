@@ -6,6 +6,8 @@ Description: Builds small, self-describing JSON payloads from the results of
     any differential-analysis table), following the llomics contract. Each
     payload carries a run card, trust checks and one state per unit of
     judgment.
+Authors@R: person("Ivan", "Osinnii", email = "osenniy.ivan@gmail.com", role = c("aut", "cre"))
+License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1)
 Imports: jsonlite, stats, utils

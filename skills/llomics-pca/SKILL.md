@@ -1,5 +1,6 @@
 ---
 name: llomics-pca
+license: MIT
 description: >
   Build an llomics payload from a PCA (prcomp, scikit-learn PCA, Scanpy sc.tl.pca): one state per
   component with variance explained, top positive and negative loadings, association with sample

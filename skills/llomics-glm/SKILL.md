@@ -1,5 +1,6 @@
 ---
 name: llomics-glm
+license: MIT
 description: >
   Build an llomics payload from a generalised linear model (R glm, statsmodels GLM or Logit,
   logistic, Poisson, negative binomial): one state per fitted model with coefficients on an

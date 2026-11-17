@@ -1,5 +1,6 @@
 ---
 name: llomics-core
+license: MIT
 description: >
   The llomics payload contract: how to turn the output of a statistical or ML step in an omics
   pipeline (PCA, limma/DESeq2, GLM, lasso, PLS-DA, clustering and marker ranking) into a compact,
