@@ -1,0 +1,264 @@
+{
+  "llomics": "0.1",
+  "method": "clusters",
+  "run": {
+    "analysis_id": "fixture-clusters",
+    "question": "Which cell type is each cluster?",
+    "tool": "fixture 1.0",
+    "steps": [
+      "simulated markers"
+    ],
+    "filters": [
+      {
+        "rule": "top features exclude names matching ^RP[LS]\\d",
+        "why": "technical signal; applied to the feature list only, not to the test"
+      },
+      {
+        "rule": "p_adj < 0.05",
+        "why": "FDR control"
+      },
+      {
+        "rule": "|effect| > 0.25",
+        "why": "minimum effect size"
+      },
+      {
+        "rule": "top 4 by stat; never padded",
+        "why": "payload size"
+      }
+    ],
+    "p_floor": 1e-300,
+    "n_p_values_floored": 0,
+    "panel_units": "mean expression across the unit's observations, in the units of the tested matrix",
+    "source_tables": {
+      "table": "markers.tsv"
+    }
+  },
+  "dataset": {
+    "n_observations": 200,
+    "observation_type": "cell",
+    "n_biological_samples": 3,
+    "n_features": 150,
+    "reference": {
+      "definition": "medians and fractions across all observations in the dataset",
+      "median_n_genes": 2468.0,
+      "median_pct_mt": 6.934,
+      "pct_predicted_doublet": 16.0
+    }
+  },
+  "trust": [
+    {
+      "check": "pseudoreplication",
+      "status": "warn",
+      "note": "wilcoxon test with cells as replicates; 3 biological sample(s). P-values rank markers and are not evidence of a population-level difference."
+    },
+    {
+      "check": "doublet_detection",
+      "status": "pass",
+      "note": "16% of observations predicted doublets"
+    },
+    {
+      "check": "cluster_stability",
+      "status": "not_run",
+      "note": "cannot be computed from one clustering; declare it with trust="
+    },
+    {
+      "check": "batch_integration",
+      "status": "warn",
+      "note": "clusters dominated by one batch: c2 (95% b2)"
+    }
+  ],
+  "units": [
+    {
+      "unit_id": "c0",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 120,
+        "pct_of_total": 60.0
+      },
+      "facts": {
+        "median_n_genes": 2247.0,
+        "n_genes_vs_reference": 0.91,
+        "median_pct_mt": 7.223,
+        "pct_mt_vs_reference": 1.04,
+        "pct_predicted_doublet": 11.7,
+        "doublet_fraction_vs_reference": 0.729,
+        "n_samples_contributing": 3,
+        "dominant_batch": "b1",
+        "dominant_batch_fraction": 0.5,
+        "nearest_cluster": "c1"
+      },
+      "top_features": [
+        {
+          "feature": "G004",
+          "effect": 2.975,
+          "stat": 17.23,
+          "p_adj": 2.476e-64,
+          "pct_in": 0.662,
+          "pct_out": 0.198
+        },
+        {
+          "feature": "G010",
+          "effect": 2.698,
+          "stat": 14.84,
+          "p_adj": 6.029e-48,
+          "pct_in": 0.784,
+          "pct_out": 0.144
+        },
+        {
+          "feature": "G009",
+          "effect": 2.979,
+          "stat": 14.29,
+          "p_adj": 1.3e-44,
+          "pct_in": 0.395,
+          "pct_out": 0.287
+        },
+        {
+          "feature": "G003",
+          "effect": 2.471,
+          "stat": 13.11,
+          "p_adj": 1.023e-37,
+          "pct_in": 0.299,
+          "pct_out": 0.112
+        }
+      ],
+      "panel": {
+        "CD3D": 0.5,
+        "MS4A1": 0.0,
+        "NOT_MEASURED": null
+      },
+      "tail": {
+        "n_shown": 4,
+        "n_eligible": 28,
+        "rule": "p_adj < 0.05 and effect > 0.25, ranked by stat, top 4"
+      }
+    },
+    {
+      "unit_id": "c1",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 60,
+        "pct_of_total": 30.0
+      },
+      "facts": {
+        "median_n_genes": 2587.0,
+        "n_genes_vs_reference": 1.05,
+        "median_pct_mt": 6.092,
+        "pct_mt_vs_reference": 0.879,
+        "pct_predicted_doublet": 11.7,
+        "doublet_fraction_vs_reference": 0.729,
+        "n_samples_contributing": 3,
+        "dominant_batch": "b1",
+        "dominant_batch_fraction": 0.5,
+        "nearest_cluster": "c0"
+      },
+      "top_features": [
+        {
+          "feature": "G016",
+          "effect": 3.698,
+          "stat": 17.82,
+          "p_adj": 7.291e-69,
+          "pct_in": 0.446,
+          "pct_out": 0.0109
+        },
+        {
+          "feature": "G008",
+          "effect": 3.132,
+          "stat": 16.98,
+          "p_adj": 8.48e-63,
+          "pct_in": 0.978,
+          "pct_out": 0.124
+        },
+        {
+          "feature": "G015",
+          "effect": 4.347,
+          "stat": 16.96,
+          "p_adj": 8.48e-63,
+          "pct_in": 0.388,
+          "pct_out": 0.124
+        },
+        {
+          "feature": "G010",
+          "effect": 3.125,
+          "stat": 15.81,
+          "p_adj": 9.738e-55,
+          "pct_in": 0.566,
+          "pct_out": 0.276
+        }
+      ],
+      "panel": {
+        "CD3D": 1.5,
+        "MS4A1": 0.0,
+        "NOT_MEASURED": null
+      },
+      "tail": {
+        "n_shown": 4,
+        "n_eligible": 25,
+        "rule": "p_adj < 0.05 and effect > 0.25, ranked by stat, top 4"
+      }
+    },
+    {
+      "unit_id": "c2",
+      "unit_type": "cluster",
+      "size": {
+        "n_cells": 20,
+        "pct_of_total": 10.0
+      },
+      "facts": {
+        "median_n_genes": 5845.0,
+        "n_genes_vs_reference": 2.37,
+        "median_pct_mt": 6.119,
+        "pct_mt_vs_reference": 0.882,
+        "pct_predicted_doublet": 55.0,
+        "doublet_fraction_vs_reference": 3.44,
+        "n_samples_contributing": 3,
+        "dominant_batch": "b2",
+        "dominant_batch_fraction": 0.95,
+        "nearest_cluster": "c0"
+      },
+      "top_features": [
+        {
+          "feature": "G017",
+          "effect": 3.773,
+          "stat": 18.54,
+          "p_adj": 1.386e-74,
+          "pct_in": 0.281,
+          "pct_out": 0.481
+        },
+        {
+          "feature": "G015",
+          "effect": 3.262,
+          "stat": 17.53,
+          "p_adj": 6.393e-67,
+          "pct_in": 0.324,
+          "pct_out": 0.078
+        },
+        {
+          "feature": "G001",
+          "effect": 2.816,
+          "stat": 14.34,
+          "p_adj": 6.374e-45,
+          "pct_in": 0.477,
+          "pct_out": 0.352
+        },
+        {
+          "feature": "G010",
+          "effect": 3.569,
+          "stat": 14.29,
+          "p_adj": 9.199e-45,
+          "pct_in": 0.503,
+          "pct_out": 0.442
+        }
+      ],
+      "panel": {
+        "CD3D": 2.5,
+        "MS4A1": 0.0,
+        "NOT_MEASURED": null
+      },
+      "tail": {
+        "n_shown": 4,
+        "n_eligible": 31,
+        "rule": "p_adj < 0.05 and effect > 0.25, ranked by stat, top 4"
+      }
+    }
+  ]
+}

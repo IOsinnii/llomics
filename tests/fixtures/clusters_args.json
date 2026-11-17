@@ -1,0 +1,45 @@
+{
+  "analysis_id": "fixture-clusters",
+  "question": "Which cell type is each cluster?",
+  "tool": "fixture 1.0",
+  "steps": [
+    "simulated markers"
+  ],
+  "test": "wilcoxon test",
+  "n_features": 4,
+  "fdr": 0.05,
+  "min_effect": 0.25,
+  "exclude": "^RP[LS]\\d",
+  "panel_values": {
+    "c0": {
+      "CD3D": 0.5,
+      "MS4A1": 0.0,
+      "NOT_MEASURED": null
+    },
+    "c1": {
+      "CD3D": 1.5,
+      "MS4A1": 0.0,
+      "NOT_MEASURED": null
+    },
+    "c2": {
+      "CD3D": 2.5,
+      "MS4A1": 0.0,
+      "NOT_MEASURED": null
+    }
+  },
+  "extra_facts": {
+    "c0": {
+      "nearest_cluster": "c1"
+    },
+    "c1": {
+      "nearest_cluster": "c0"
+    },
+    "c2": {
+      "nearest_cluster": "c0"
+    }
+  },
+  "n_dataset_features": 150,
+  "source_tables": {
+    "table": "markers.tsv"
+  }
+}
