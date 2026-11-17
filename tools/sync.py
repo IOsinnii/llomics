@@ -4,7 +4,7 @@
     python tools/sync.py           # copy
     python tools/sync.py --check   # exit 1 if any copy differs (used by the tests)
 
-The contract is authored in contract/llomics-contract.json. The validator is authored in
+The contract and the technical panels are authored in contract/. The validator is authored in
 python/llomics/validate.py. Skills are installed on their own, and the R and Python packages are
 installed on their own, so each needs a copy; none of the copies is edited by hand.
 """
@@ -20,6 +20,10 @@ COPIES = {
         "python/llomics/llomics-contract.json",
         "r/llomics/inst/llomics-contract.json",
         "skills/llomics-core/scripts/llomics-contract.json",
+    ],
+    "contract/llomics-panels.json": [
+        "python/llomics/llomics-panels.json",
+        "r/llomics/inst/llomics-panels.json",
     ],
     "python/llomics/validate.py": [
         "skills/llomics-core/scripts/validate_payload.py",

@@ -17,4 +17,4 @@ bedrock = ["anthropic"]
 packages = ["llomics", "llomics.adapters"]
 
 [tool.setuptools.package-data]
-llomics = ["llomics-contract.json"]
+llomics = ["llomics-contract.json", "llomics-panels.json"]

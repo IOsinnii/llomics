@@ -50,6 +50,33 @@ test_that("limma adapter builds a complete dge payload", {
   expect_equal(written(payload)$units[[1]]$panel$NOT_MEASURED, NULL) # written as JSON null
 })
 
+test_that("limma adapter adds technical signatures and enrichment from a GMT file", {
+  skip_if_not_installed("limma")
+  s <- sim_limma()
+  s$fit$genes$symbol[1:6] <- c("XIST", "RPS4Y1", "DDX3Y", "KDM5D", "UTY", "EIF1AY")
+  gmt <- tempfile(fileext = ".gmt")
+  writeLines(c(paste(c("PLANTED", "x", sprintf("SYM%03d", 7:30)), collapse = "\t"),
+               paste(c("UNRELATED", "x", sprintf("SYM%03d", 400:430)), collapse = "\t")), gmt)
+  payload <- llomics_limma(
+    s$fit, coefs = "stim_vs_ctrl", definitions = c(stim_vs_ctrl = "stimulated - control"),
+    targets = s$targets, group = "group", batch = "batch", batch_in_design = FALSE,
+    analysis_id = "t", question = "q", steps = "lmFit", symbol_col = "symbol", gene_sets = gmt, out_dir = NULL)
+  unit <- payload$units[[1]]
+  expect_equal(unit$facts$technical_signatures$sex$n_hits, 6)
+  expect_equal(unit$enrichment$n_sets_tested, 2)
+  expect_equal(vapply(unit$enrichment$up, function(x) x$set, ""), "PLANTED")
+  expect_equal(payload$run$enrichment$gene_sets, basename(gmt))
+  json <- written(payload)
+  expect_type(json$units[[1]]$facts$technical_flags, "list")       # an array even when empty or of length one
+  expect_type(json$units[[1]]$enrichment$up[[1]]$genes, "list")
+  off <- llomics_limma(
+    s$fit, coefs = "stim_vs_ctrl", definitions = c(stim_vs_ctrl = "stimulated - control"),
+    targets = s$targets, group = "group", analysis_id = "t", question = "q", steps = "lmFit",
+    technical_panels = FALSE, out_dir = NULL)
+  expect_null(off$units[[1]]$facts$n_technical_flags)
+  expect_null(off$units[[1]]$enrichment)
+})
+
 test_that("limma adapter fails the batch check when group and batch are aliased", {
   skip_if_not_installed("limma")
   s <- sim_limma(aliased = TRUE)

@@ -7,7 +7,7 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Any, Sequence
 
-from .. import core
+from .. import core, enrich
 from ..contract import DEFAULTS
 
 QC_KEYS = ("n_genes_by_counts", "total_counts", "pct_counts_mt")
@@ -39,6 +39,9 @@ def rank_genes_groups(
     rerun: bool = True,
     key: str = "rank_genes_groups",
     write_table: bool = True,
+    gene_sets: dict[str, Sequence[str]] | str | Path | None = None,
+    gene_sets_name: str | None = None,
+    technical_panels: dict[str, Any] | bool = True,
     **kwargs: Any,
 ) -> dict[str, Any]:
     """Run ``sc.tl.rank_genes_groups`` and return an llomics payload built from its result.
@@ -70,11 +73,20 @@ def rank_genes_groups(
         ``{"cluster_stability": ("pass", "stable across resolutions 0.4-1.0")}``.
     rerun
         False reuses the result already stored in ``adata.uns[key]`` instead of running the test.
+    gene_sets
+        Gene sets for over-representation of the hits: a mapping of name to members, or the path
+        to a GMT file.
+    technical_panels
+        True scores the shipped artefact panels (sex, stress, cell cycle ...) against the hits;
+        False skips it; a mapping replaces the panels.
     """
     import numpy as np
     import pandas as pd
     import scanpy as sc
 
+    if isinstance(gene_sets, (str, Path)):
+        gene_sets_name = gene_sets_name or Path(gene_sets).name
+        gene_sets = enrich.read_gmt(gene_sets)
     if rerun:
         sc.tl.rank_genes_groups(adata, groupby, pts=True, key_added=key, **kwargs)
     elif key not in adata.uns:
@@ -118,7 +130,8 @@ def rank_genes_groups(
     run_steps = list(steps) if steps is not None else _harvest_steps(adata, key)
     common = dict(analysis_id=analysis_id or f"{groupby}-{method}-{reference}", question=question, tool=tool,
                   steps=run_steps, n_features=n_features, fdr=fdr, min_effect=min_logfc, exclude=exclude,
-                  source_tables=source_tables, run_extra=run_extra, trust=trust)
+                  source_tables=source_tables, run_extra=run_extra, trust=trust, gene_sets=gene_sets,
+                  gene_sets_name=gene_sets_name, technical_panels=technical_panels)
 
     if reference == "rest":
         qc = {k: obs[k].tolist() for k in qc_keys if k in obs.columns}

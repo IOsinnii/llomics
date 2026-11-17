@@ -29,6 +29,12 @@
     "p_floor": 1e-300,
     "n_p_values_floored": 0,
     "panel_units": "mean expression across the unit's observations, in the units of the tested matrix",
+    "technical_panels": "each panel is scored against all significant features; a panel is flagged at 3 or more hits, hypergeometric p < 0.001, and at least 20% of the top 50 hits",
+    "enrichment": {
+      "gene_sets": "sets.gmt",
+      "n_sets": 7,
+      "method": "one-sided hypergeometric test of the hits against the tested features, sets with at least 5 tested members, Benjamini-Hochberg across sets, p_adj < 0.05"
+    },
     "source_tables": {
       "table": "markers.tsv"
     }
@@ -85,7 +91,18 @@
         "n_samples_contributing": 3,
         "dominant_batch": "b1",
         "dominant_batch_fraction": 0.5,
-        "nearest_cluster": "c1"
+        "nearest_cluster": "c1",
+        "n_panel_features_measured": 1,
+        "technical_signatures": {
+          "ribosomal": {
+            "n_measured": 1,
+            "n_hits": 1,
+            "top_share": 0.0345,
+            "p": 0.1933
+          }
+        },
+        "technical_flags": [],
+        "n_technical_flags": 0
       },
       "top_features": [
         {
@@ -130,6 +147,26 @@
         "n_shown": 4,
         "n_eligible": 28,
         "rule": "p_adj < 0.05 and effect > 0.25, ranked by stat, top 4"
+      },
+      "enrichment": {
+        "n_sets_tested": 2,
+        "up": [
+          {
+            "set": "SET_CLUSTER",
+            "n_set": 11,
+            "n_overlap": 11,
+            "expected": 2.05,
+            "p_adj": 2.885e-09,
+            "genes": [
+              "G004",
+              "G010",
+              "G009",
+              "G003",
+              "G011",
+              "G005"
+            ]
+          }
+        ]
       }
     },
     {
@@ -149,7 +186,18 @@
         "n_samples_contributing": 3,
         "dominant_batch": "b1",
         "dominant_batch_fraction": 0.5,
-        "nearest_cluster": "c0"
+        "nearest_cluster": "c0",
+        "n_panel_features_measured": 1,
+        "technical_signatures": {
+          "ribosomal": {
+            "n_measured": 1,
+            "n_hits": 1,
+            "top_share": 0.0385,
+            "p": 0.1733
+          }
+        },
+        "technical_flags": [],
+        "n_technical_flags": 0
       },
       "top_features": [
         {
@@ -194,6 +242,26 @@
         "n_shown": 4,
         "n_eligible": 25,
         "rule": "p_adj < 0.05 and effect > 0.25, ranked by stat, top 4"
+      },
+      "enrichment": {
+        "n_sets_tested": 2,
+        "up": [
+          {
+            "set": "SET_CLUSTER",
+            "n_set": 11,
+            "n_overlap": 11,
+            "expected": 1.83,
+            "p_adj": 5.989e-10,
+            "genes": [
+              "G008",
+              "G010",
+              "G011",
+              "G009",
+              "G004",
+              "G002"
+            ]
+          }
+        ]
       }
     },
     {
@@ -213,7 +281,18 @@
         "n_samples_contributing": 3,
         "dominant_batch": "b2",
         "dominant_batch_fraction": 0.95,
-        "nearest_cluster": "c0"
+        "nearest_cluster": "c0",
+        "n_panel_features_measured": 1,
+        "technical_signatures": {
+          "ribosomal": {
+            "n_measured": 1,
+            "n_hits": 1,
+            "top_share": 0.0312,
+            "p": 0.2133
+          }
+        },
+        "technical_flags": [],
+        "n_technical_flags": 0
       },
       "top_features": [
         {
@@ -258,6 +337,26 @@
         "n_shown": 4,
         "n_eligible": 31,
         "rule": "p_adj < 0.05 and effect > 0.25, ranked by stat, top 4"
+      },
+      "enrichment": {
+        "n_sets_tested": 2,
+        "up": [
+          {
+            "set": "SET_CLUSTER",
+            "n_set": 11,
+            "n_overlap": 11,
+            "expected": 2.27,
+            "p_adj": 1.138e-08,
+            "genes": [
+              "G001",
+              "G010",
+              "G011",
+              "G005",
+              "G008",
+              "G007"
+            ]
+          }
+        ]
       }
     }
   ]

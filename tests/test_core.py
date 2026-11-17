@@ -154,6 +154,70 @@ class TrustChecks(unittest.TestCase):
             core.contrast_unit({"feature": ["a"], "effect": [1.0], "p": [0.1]}, unit_id="x", definition="d")
 
 
+class TechnicalPanelsAndEnrichment(unittest.TestCase):
+    def setUp(self):
+        self.dge = build_dge()
+        self.a, self.c = self.dge["units"]
+
+    def test_sex_signature_is_flagged_where_planted(self):
+        self.assertEqual(self.c["facts"]["technical_flags"], ["sex"])
+        self.assertEqual(self.c["facts"]["n_technical_flags"], 1)
+        sex = self.c["facts"]["technical_signatures"]["sex"]
+        self.assertEqual((sex["n_measured"], sex["n_hits"]), (7, 6))  # includes the mouse-case symbol Ddx3y
+        self.assertEqual(self.a["facts"]["technical_flags"], [])
+        self.assertEqual(self.a["facts"]["n_technical_flags"], 0)
+
+    def test_a_few_panel_hits_are_reported_but_not_flagged(self):
+        mito = self.a["facts"]["technical_signatures"]["mitochondrial"]
+        self.assertEqual(mito["n_hits"], 2)
+        self.assertNotIn("stress", self.a["facts"]["technical_signatures"])  # measured, but no hits
+        self.assertEqual(self.a["facts"]["n_panel_features_measured"], 6)
+
+    def test_unmeasurable_is_null_not_zero(self):
+        table = {"feature": ["m1", "m2", "m3"], "effect": [2.0, 1.0, 0.1], "p": [1e-6, 1e-4, 0.5], "p_adj": [1e-5, 1e-3, 0.5]}
+        facts = core.contrast_unit(table, unit_id="x", definition="x - y")["facts"]
+        self.assertEqual(facts["n_panel_features_measured"], 0)
+        self.assertIsNone(facts["n_technical_flags"])
+
+    def test_panels_can_be_switched_off_or_replaced(self):
+        n = 60  # five hits among sixty features, all five in the custom panel
+        table = {"feature": [f"g{i}" for i in range(n)], "effect": [2.0] * 5 + [0.1] * (n - 5),
+                 "p": [1e-6] * 5 + [0.5] * (n - 5), "p_adj": [1e-5] * 5 + [0.5] * (n - 5)}
+        off = core.contrast_unit(table, unit_id="x", definition="d", technical_panels=False)["facts"]
+        self.assertNotIn("n_technical_flags", off)
+        mine = {"mine": {"genes": ["G0", "G1", "G2", "G3", "G4"]}}
+        custom = core.contrast_unit(table, unit_id="x", definition="d", technical_panels=mine)["facts"]
+        self.assertEqual(custom["technical_flags"], ["mine"])
+        # the same three-of-three overlap in a four-feature table is not evidence: p = 0.25
+        tiny = {k: v[:3] + v[-1:] for k, v in table.items()}
+        small = core.contrast_unit(tiny, unit_id="x", definition="d", technical_panels={"mine": {"genes": ["G0", "G1", "G2"]}})["facts"]
+        self.assertEqual(small["technical_flags"], [])
+
+    def test_enrichment_finds_planted_sets_only(self):
+        e = self.a["enrichment"]
+        self.assertEqual(e["n_sets_tested"], 3)  # too-small, unmeasured and other-universe sets are not tested
+        self.assertEqual([s["set"] for s in e["up"]], ["SET_UP"])
+        self.assertEqual([s["set"] for s in e["down"]], ["SET_DOWN"])  # the lower-case set matched
+        up = e["up"][0]
+        self.assertGreater(up["n_overlap"], 5 * up["expected"])
+        self.assertLessEqual(len(up["genes"]), core.CONTRACT["enrichment"]["max_genes"])
+        self.assertEqual(self.c["enrichment"]["up"], [])
+        self.assertEqual(self.dge["run"]["enrichment"]["gene_sets"], "sets.gmt")
+
+    def test_cluster_enrichment(self):
+        clusters = build_clusters()
+        self.assertEqual([s["set"] for s in clusters["units"][0]["enrichment"]["up"]], ["SET_CLUSTER"])
+        self.assertIn("n_technical_flags", clusters["units"][0]["facts"])
+
+    def test_statistics(self):
+        from llomics import enrich
+
+        self.assertAlmostEqual(enrich.hypergeom_sf(1, 10, 5, 2), 1 - 10 / 45, places=12)
+        self.assertEqual(enrich.hypergeom_sf(0, 10, 5, 2), 1.0)
+        self.assertEqual(enrich.hypergeom_sf(3, 10, 5, 2), 0.0)
+        self.assertEqual(enrich.bh([0.01, 0.04, 0.03, 0.5]), [0.04, 0.04 * 4 / 3, 0.04 * 4 / 3, 0.5])
+
+
 class Validator(unittest.TestCase):
     def setUp(self):
         self.payload = build_dge()

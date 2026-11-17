@@ -1,0 +1,40 @@
+{
+  "version": "0.1",
+  "matching": "Case-insensitive on the readable name (symbol if present, else the feature id), so mouse symbols match. A panel is a gene list, a name pattern, or both.",
+  "panels": {
+    "sex": {
+      "description": "Sex-linked genes: X-inactivation transcripts, Y-chromosome genes, and X genes that escape inactivation. A hit list dominated by these means the groups differ in sex ratio.",
+      "genes": ["XIST", "TSIX", "JPX", "RPS4Y1", "DDX3Y", "KDM5D", "UTY", "EIF1AY", "EIF2S3Y", "USP9Y", "ZFY",
+                "TXLNGY", "NLGN4Y", "TMSB4Y", "TTTY14", "TTTY15", "PRKY", "TBL1Y", "KDM5C", "KDM6A", "DDX3X",
+                "EIF1AX", "ZFX", "PUDP", "CA5B", "EIF2S3", "TXLNG"]
+    },
+    "stress": {
+      "description": "Immediate-early and heat-shock genes induced by tissue dissociation, delayed processing, or temperature. A hit list dominated by these often reflects sample handling.",
+      "genes": ["FOS", "FOSB", "JUN", "JUNB", "JUND", "EGR1", "EGR2", "EGR3", "IER2", "IER3", "IER5", "ATF3",
+                "DUSP1", "DUSP2", "NR4A1", "NR4A2", "NR4A3", "KLF2", "KLF4", "KLF6", "HSPA1A", "HSPA1B", "HSPA8",
+                "HSPH1", "DNAJB1", "DNAJA1", "HSP90AA1", "HSP90AB1", "HSPB1", "HSPE1", "HSPD1", "ZFP36", "BTG1",
+                "BTG2", "SOCS3", "CCN1", "CYR61", "PPP1R15A", "NFKBIA", "CEBPB", "CEBPD", "GADD45B", "UBC"]
+    },
+    "cell_cycle": {
+      "description": "S-phase and G2/M genes. In a contrast they indicate a difference in proliferation; in a cluster they mark cycling cells of any type.",
+      "genes": ["MCM2", "MCM3", "MCM4", "MCM5", "MCM6", "MCM7", "PCNA", "TYMS", "FEN1", "RRM1", "RRM2", "UNG",
+                "GINS2", "CDC45", "CDC6", "CDT1", "UHRF1", "HELLS", "DTL", "CLSPN", "RAD51", "E2F8", "CCNE2",
+                "MKI67", "TOP2A", "CDK1", "CCNB1", "CCNB2", "CCNA2", "BIRC5", "UBE2C", "NUSAP1", "TPX2", "CENPF",
+                "CENPE", "CENPA", "AURKA", "AURKB", "PLK1", "BUB1", "BUB1B", "CDC20", "KIF11", "KIF2C", "KIF20B",
+                "HMMR", "TTK", "NDC80", "NUF2", "CKS2", "TUBB4B", "HMGB2", "SMC4", "DLGAP5", "ANLN", "ECT2"]
+    },
+    "haemoglobin": {
+      "description": "Haemoglobin genes. Outside erythroid samples they indicate blood content or contamination by red cells.",
+      "genes": ["HBA1", "HBA2", "HBB", "HBD", "HBG1", "HBG2", "HBE1", "HBM", "HBQ1", "HBZ", "ALAS2",
+                "HBA-A1", "HBA-A2", "HBB-BS", "HBB-BT"]
+    },
+    "mitochondrial": {
+      "description": "Mitochondrially encoded genes. A hit list dominated by these usually reflects cell quality.",
+      "pattern": "^MT-"
+    },
+    "ribosomal": {
+      "description": "Ribosomal protein genes. A hit list dominated by these usually reflects RNA content, cell size or library complexity.",
+      "pattern": "^RP[LS]\\d"
+    }
+  }
+}

@@ -16,6 +16,7 @@ read_table <- function(path) {
 }
 read_args <- function(name) jsonlite::fromJSON(file.path(fixtures, name), simplifyVector = FALSE)
 chr <- function(x) unlist(x, use.names = FALSE)
+gene_sets <- llomics_read_gmt(file.path(fixtures, "sets.gmt"))
 
 # ---- dge ----
 a <- read_args("dge_args.json")
@@ -27,7 +28,8 @@ dge <- llomics_dge_payload(
   n_observations = a$n_observations, group_sizes = a$group_sizes, batch_crosstab = a$batch_crosstab,
   batch_in_design = a$batch_in_design, mean_variance = a$mean_variance, n_features = a$n_features,
   fdr = a$fdr, min_effect = a$min_effect, exclude = a$exclude, panel = chr(a$panel), sizes = a$sizes,
-  contrast_weights = a$contrast_weights, filters = a$filters, source_tables = a$source_tables, trust = a$trust)
+  contrast_weights = a$contrast_weights, filters = a$filters, source_tables = a$source_tables, trust = a$trust,
+  gene_sets = gene_sets, gene_sets_name = "sets.gmt")
 llomics_write(dge, file.path(out_dir, "dge.json"))
 
 # ---- clusters ----
@@ -45,5 +47,6 @@ cl <- llomics_clusters_payload(
   labels = obs$label, qc = list(n_genes = obs$n_genes, pct_mt = obs$pct_mt), doublet = obs$doublet,
   batch = obs$batch, sample = obs$sample, panel_values = panel_values, extra_facts = a$extra_facts,
   n_dataset_features = a$n_dataset_features, n_features = a$n_features, fdr = a$fdr,
-  min_effect = a$min_effect, exclude = a$exclude, source_tables = a$source_tables)
+  min_effect = a$min_effect, exclude = a$exclude, source_tables = a$source_tables,
+  gene_sets = gene_sets, gene_sets_name = "sets.gmt")
 llomics_write(cl, file.path(out_dir, "clusters.json"))

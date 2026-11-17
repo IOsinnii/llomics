@@ -32,6 +32,12 @@
     ],
     "p_floor": 1e-300,
     "n_p_values_floored": 2,
+    "technical_panels": "each panel is scored against all significant features; a panel is flagged at 3 or more hits, hypergeometric p < 0.001, and at least 20% of the top 50 hits",
+    "enrichment": {
+      "gene_sets": "sets.gmt",
+      "n_sets": 7,
+      "method": "one-sided hypergeometric test of the hits against the tested features, sets with at least 5 tested members, Benjamini-Hochberg across sets, p_adj < 0.05"
+    },
     "source_tables": {
       "A_vs_B": "dge_A_vs_B.tsv",
       "C_vs_B": "dge_C_vs_B.tsv"
@@ -133,7 +139,18 @@
           "q50": 0.0536,
           "q75": 0.333,
           "q99": 2.29
-        }
+        },
+        "n_panel_features_measured": 6,
+        "technical_signatures": {
+          "mitochondrial": {
+            "n_measured": 2,
+            "n_hits": 2,
+            "top_share": 0.02,
+            "p": 0.02955
+          }
+        },
+        "technical_flags": [],
+        "n_technical_flags": 0
       },
       "top_features": {
         "up": [
@@ -242,6 +259,43 @@
         "n_eligible": 67,
         "rule": "p_adj < 0.05 and |effect| > 0.2, ranked by |stat|, up to 5 per direction"
       },
+      "enrichment": {
+        "n_sets_tested": 3,
+        "up": [
+          {
+            "set": "SET_UP",
+            "n_set": 26,
+            "n_overlap": 21,
+            "expected": 2.61,
+            "p_adj": 4.233e-19,
+            "genes": [
+              "SYM0010",
+              "SYM0026",
+              "SYM0027",
+              "SYM0018",
+              "SYM0021",
+              "SYM0007"
+            ]
+          }
+        ],
+        "down": [
+          {
+            "set": "SET_DOWN",
+            "n_set": 24,
+            "n_overlap": 19,
+            "expected": 1.62,
+            "p_adj": 1.834e-21,
+            "genes": [
+              "SYM0058",
+              "SYM0047",
+              "SYM0061",
+              "SYM0064",
+              "SYM0063",
+              "SYM0065"
+            ]
+          }
+        ]
+      },
       "trust": [
         {
           "check": "pvalue_distribution",
@@ -268,11 +322,11 @@
       "facts": {
         "fdr": 0.05,
         "effect_cutoff": 1.0,
-        "n_hits": 15,
+        "n_hits": 16,
         "n_up": 8,
-        "n_down": 7,
+        "n_down": 8,
         "n_up_effect": 3,
-        "n_down_effect": 2,
+        "n_down_effect": 3,
         "n_near_miss": 6,
         "n_p_adj_missing": 1,
         "n_uninformative": 6,
@@ -295,7 +349,32 @@
           "q50": 0.0458,
           "q75": 0.268,
           "q99": 1.86
-        }
+        },
+        "n_panel_features_measured": 9,
+        "technical_signatures": {
+          "sex": {
+            "n_measured": 7,
+            "n_hits": 6,
+            "top_share": 0.353,
+            "p": 1.567e-08
+          },
+          "mitochondrial": {
+            "n_measured": 1,
+            "n_hits": 1,
+            "top_share": 0.0588,
+            "p": 0.04261
+          },
+          "ribosomal": {
+            "n_measured": 1,
+            "n_hits": 1,
+            "top_share": 0.0588,
+            "p": 0.04261
+          }
+        },
+        "technical_flags": [
+          "sex"
+        ],
+        "n_technical_flags": 1
       },
       "top_features": {
         "up": [
@@ -309,7 +388,7 @@
           },
           {
             "feature": "F0002",
-            "symbol": "SYM0002",
+            "symbol": "XIST",
             "effect": 1.826,
             "ave_expr": 10.59,
             "stat": 30.0,
@@ -317,7 +396,7 @@
           },
           {
             "feature": "F0003",
-            "symbol": "SYM0003",
+            "symbol": "RPS4Y1",
             "effect": 2.321,
             "ave_expr": 4.567,
             "stat": 30.0,
@@ -333,7 +412,7 @@
           },
           {
             "feature": "F0005",
-            "symbol": "SYM0005",
+            "symbol": "Ddx3y",
             "effect": 2.595,
             "ave_expr": 4.202,
             "stat": 4.52,
@@ -343,7 +422,7 @@
         "down": [
           {
             "feature": "F0007",
-            "symbol": "SYM0007",
+            "symbol": "UTY",
             "effect": -1.88,
             "ave_expr": 11.89,
             "stat": -11.88,
@@ -351,7 +430,7 @@
           },
           {
             "feature": "F0008",
-            "symbol": "SYM0008",
+            "symbol": "EIF1AY",
             "effect": -1.843,
             "ave_expr": 2.465,
             "stat": -6.046,
@@ -374,12 +453,12 @@
             "p_adj": 0.0006738
           },
           {
-            "feature": "F0328",
-            "symbol": "SYM0328",
-            "effect": -0.5168,
-            "ave_expr": 4.368,
-            "stat": -3.431,
-            "p_adj": 0.015
+            "feature": "F0009",
+            "symbol": "TSIX",
+            "effect": -1.731,
+            "ave_expr": 5.499,
+            "stat": -3.544,
+            "p_adj": 0.0105
           }
         ]
       },
@@ -401,8 +480,13 @@
       },
       "tail": {
         "n_shown": 10,
-        "n_eligible": 15,
+        "n_eligible": 16,
         "rule": "p_adj < 0.05 and |effect| > 0.2, ranked by |stat|, up to 5 per direction"
+      },
+      "enrichment": {
+        "n_sets_tested": 3,
+        "up": [],
+        "down": []
       },
       "trust": [
         {

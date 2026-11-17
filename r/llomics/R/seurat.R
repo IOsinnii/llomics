@@ -48,15 +48,22 @@
 #' @param qc_cols Metadata columns summarised per cluster and compared with the dataset.
 #' @param trust Declarations, e.g. `list(cluster_stability = c("pass", "stable across resolutions"))`.
 #' @param markers An existing `FindAllMarkers()` result to use instead of running the test.
+#' @param gene_sets Named list of gene sets, or the path to a GMT file, for enrichment of the hits.
+#' @param technical_panels TRUE scores the shipped artefact panels against the hits; FALSE skips it.
 #' @export
 llomics_FindAllMarkers <- function(object, n_features = NULL, panel = character(0), question = NULL,
                                    analysis_id = NULL, out = NULL, fdr = NULL, min_logfc = 0,
                                    exclude = llomics_contract()$defaults$exclude, sample_col = NULL,
                                    batch_col = NULL, doublet_col = NULL,
                                    qc_cols = c("nFeature_RNA", "nCount_RNA", "percent.mt"),
-                                   steps = NULL, trust = NULL, markers = NULL, write_table = TRUE, ...) {
+                                   steps = NULL, trust = NULL, markers = NULL, write_table = TRUE,
+                                   gene_sets = NULL, gene_sets_name = NULL, technical_panels = TRUE, ...) {
   if (!requireNamespace("Seurat", quietly = TRUE)) stop("the Seurat package is needed for llomics_FindAllMarkers()")
   dots <- list(...)
+  if (is.character(gene_sets) && length(gene_sets) == 1) {
+    gene_sets_name <- gene_sets_name %||% basename(gene_sets)
+    gene_sets <- llomics_read_gmt(gene_sets)
+  }
   if (is.null(markers)) markers <- Seurat::FindAllMarkers(object, ...)
   if (!nrow(markers)) stop("FindAllMarkers returned no rows")
 
@@ -121,6 +128,7 @@ llomics_FindAllMarkers <- function(object, n_features = NULL, panel = character(
     source_tables = source_tables,
     run_extra = list(steps_source = st$source,
                      p_adj_note = "Seurat p_val_adj is a Bonferroni correction over all features in the object"),
+    gene_sets = gene_sets, gene_sets_name = gene_sets_name, technical_panels = technical_panels,
     trust = trust
   )
   if (!is.null(out)) llomics_write(payload, out)
@@ -143,9 +151,14 @@ llomics_FindMarkers <- function(object, ident.1, ident.2 = NULL, group.by = NULL
                                 panel = character(0), question = NULL, analysis_id = NULL, out = NULL,
                                 fdr = NULL, min_logfc = 0, exclude = llomics_contract()$defaults$exclude,
                                 sample_col = NULL, batch_col = NULL, steps = NULL, trust = NULL,
-                                markers = NULL, write_table = TRUE, ...) {
+                                markers = NULL, write_table = TRUE, gene_sets = NULL, gene_sets_name = NULL,
+                                technical_panels = TRUE, ...) {
   if (!requireNamespace("Seurat", quietly = TRUE)) stop("the Seurat package is needed for llomics_FindMarkers()")
   dots <- list(...)
+  if (is.character(gene_sets) && length(gene_sets) == 1) {
+    gene_sets_name <- gene_sets_name %||% basename(gene_sets)
+    gene_sets <- llomics_read_gmt(gene_sets)
+  }
   if (is.null(markers)) {
     markers <- Seurat::FindMarkers(object, ident.1 = ident.1, ident.2 = ident.2, group.by = group.by, ...)
   }
@@ -208,6 +221,7 @@ llomics_FindMarkers <- function(object, ident.1, ident.2 = NULL, group.by = NULL
     run_extra = list(steps_source = st$source),
     dataset_reference = list(reference_group = name2),
     p_shape_skip = if (pre$active) paste0(pre$note, ", so the p-value histogram is not a sample of all features; rerun with logfc.threshold = 0 and min.pct = 0 to judge it"),
+    gene_sets = gene_sets, gene_sets_name = gene_sets_name, technical_panels = technical_panels,
     trust = trust
   )
   if (!is.null(out)) llomics_write(payload, out)

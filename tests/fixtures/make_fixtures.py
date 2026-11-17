@@ -41,7 +41,7 @@ def write_tsv(path: Path, header: list[str], rows: list[list]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
-def dge_table(rng: random.Random, n: int, n_up: int, n_down: int) -> list[list]:
+def dge_table(rng: random.Random, n: int, n_up: int, n_down: int, rename: dict[int, str] | None = None) -> list[list]:
     rows = []
     for i in range(n):
         effect = rng.gauss(0, 0.35)
@@ -57,6 +57,8 @@ def dge_table(rng: random.Random, n: int, n_up: int, n_down: int) -> list[list]:
             symbol = ""                      # no readable name
         if i in (3, n_up + 2):
             symbol = f"MT-GENE{i}"           # matched by the exclude pattern
+        if rename and i in rename:
+            symbol = rename[i]               # a real gene name, so the technical panels have something to find
         rows.append([f"F{i + 1:04d}", symbol, effect, rng.uniform(2, 12), stat, p])
     # Edge cases
     rows[0][4], rows[0][5] = 60.0, 0.0       # underflowed p-value
@@ -75,8 +77,22 @@ def dge_table(rng: random.Random, n: int, n_up: int, n_down: int) -> list[list]:
 def main() -> None:
     rng = random.Random(20261117)
     header = ["feature", "symbol", "effect", "ave_expr", "stat", "p", "p_adj"]
-    write_tsv(HERE / "dge_A_vs_B.tsv", header, dge_table(rng, 400, 40, 25))
-    write_tsv(HERE / "dge_C_vs_B.tsv", header, dge_table(rng, 400, 6, 3))
+    write_tsv(HERE / "dge_A_vs_B.tsv", header,
+              dge_table(rng, 400, 40, 25, {300: "FOS", 301: "Jun", 302: "EGR1", 303: "HSPA1A"}))
+    write_tsv(HERE / "dge_C_vs_B.tsv", header,
+              dge_table(rng, 400, 6, 3, {1: "XIST", 2: "RPS4Y1", 4: "Ddx3y", 5: "KDM5D", 6: "UTY", 7: "EIF1AY", 8: "TSIX"}))
+    sets = {
+        "SET_UP": [f"SYM{i:04d}" for i in range(5, 31)],
+        "SET_DOWN": [f"sym{i:04d}" for i in range(41, 66)],     # lower case: matching ignores case
+        "SET_RANDOM": [f"SYM{i:04d}" for i in range(200, 231)],
+        "SET_SMALL": ["SYM0010", "SYM0011", "SYM0012"],          # below the minimum size: not tested
+        "SET_ABSENT": [f"NOPE{i}" for i in range(20)],           # no member measured: not tested
+        "SET_CLUSTER": [f"G{i:03d}" for i in range(1, 13)],
+        "SET_OTHER": [f"G{i:03d}" for i in range(100, 121)],
+    }
+    (HERE / "sets.gmt").write_text(
+        "".join(f"{name}\tfixture\t" + "\t".join(members) + "\n" for name, members in sets.items()),
+        encoding="utf-8", newline="\n")
     (HERE / "dge_args.json").write_text(json.dumps({
         "definitions": {"A_vs_B": "A - B, adjusted for batch; positive effect = higher in A",
                         "C_vs_B": "C - B, adjusted for batch; positive effect = higher in C"},

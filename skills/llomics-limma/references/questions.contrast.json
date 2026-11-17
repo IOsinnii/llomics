@@ -64,6 +64,12 @@
         "op": "<",
         "value": 10,
         "reason": "too_few_hits"
+      },
+      {
+        "fact": "n_technical_flags",
+        "op": ">",
+        "value": 0,
+        "reason": "technical_signature"
       }
     ],
     "judgments": [

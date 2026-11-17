@@ -44,10 +44,16 @@ class Benchmark(unittest.TestCase):
             "no_batch_info": ["trust:batch_confounding:not_run"],
             "unmodelled_batch": ["trust:pvalue_distribution:warn"],
             "two_replicates": ["trust:replicates:warn"],
+            "sex_imbalance": ["technical_signature"],
+            "stress_handling": ["technical_signature"],
         }
         for sid, reasons in expected.items():
             with self.subTest(scenario=sid):
                 self.assertEqual(self.rows[sid]["reasons"], reasons)
+
+    def test_only_composition_still_needs_the_model(self):
+        pending = sorted(sid for sid, r in self.rows.items() if r["without_model"].startswith("pending"))
+        self.assertEqual(pending, ["composition"])
 
     def test_known_blind_spot_is_still_reported_as_one(self):
         self.assertTrue(self.rows["technical_replicates"]["without_model"].startswith("not caught"))

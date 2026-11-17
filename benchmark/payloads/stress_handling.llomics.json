@@ -18,6 +18,7 @@
     ],
     "p_floor": 1e-300,
     "n_p_values_floored": 0,
+    "technical_panels": "each panel is scored against all significant features; a panel is flagged at 3 or more hits, hypergeometric p < 0.001, and at least 20% of the top 50 hits",
     "design_columns": ["control", "treated", "batch_b2"],
     "df_prior_median": 7.884,
     "df_prior_infinite": false,
@@ -106,7 +107,18 @@
           "q50": 0.00715,
           "q75": 0.131,
           "q99": 1.35
-        }
+        },
+        "n_panel_features_measured": 84,
+        "technical_signatures": {
+          "stress": {
+            "n_measured": 41,
+            "n_hits": 40,
+            "top_share": 0.889,
+            "p": 6.276e-89
+          }
+        },
+        "technical_flags": ["stress"],
+        "n_technical_flags": 1
       },
       "top_features": {
         "up": [

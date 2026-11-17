@@ -18,6 +18,7 @@
     ],
     "p_floor": 1e-300,
     "n_p_values_floored": 0,
+    "technical_panels": "each panel is scored against all significant features; a panel is flagged at 3 or more hits, hypergeometric p < 0.001, and at least 20% of the top 50 hits",
     "design_columns": ["control", "treated", "batch_b2"],
     "df_prior_median": 7.281,
     "df_prior_infinite": false,
@@ -106,7 +107,24 @@
           "q50": -0.00241,
           "q75": 0.125,
           "q99": 0.538
-        }
+        },
+        "n_panel_features_measured": 84,
+        "technical_signatures": {
+          "sex": {
+            "n_measured": 26,
+            "n_hits": 19,
+            "top_share": 0.864,
+            "p": 5.692e-43
+          },
+          "ribosomal": {
+            "n_measured": 1,
+            "n_hits": 1,
+            "top_share": 0.0455,
+            "p": 0.005558
+          }
+        },
+        "technical_flags": ["sex"],
+        "n_technical_flags": 1
       },
       "top_features": {
         "up": [

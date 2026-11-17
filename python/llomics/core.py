@@ -14,6 +14,7 @@ import re
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
+from . import enrich
 from .contract import CONTRACT, DEFAULTS, VERSION
 
 Table = Mapping[str, Sequence[Any]]
@@ -270,8 +271,14 @@ def contrast_unit(table: Table, *, unit_id: str, definition: str, n_features: in
                   fdr: float | None = None, min_effect: float = 0.0, effect_cutoff: float | None = None,
                   exclude: str | None = None, panel: Sequence[str] = (), size: Mapping[str, Any] | None = None,
                   extra_facts: Mapping[str, Any] | None = None, contrast_weights: Mapping[str, float] | None = None,
-                  p_shape_skip: str | None = None, p_floor: float | None = None) -> dict[str, Any]:
+                  p_shape_skip: str | None = None, technical_panels: Mapping[str, Any] | bool = True,
+                  gene_sets: Mapping[str, Sequence[str]] | None = None,
+                  p_floor: float | None = None) -> dict[str, Any]:
     """One contrast: hit counts, p-value shape, top up and down features, and the panel.
+
+    ``technical_panels`` scores known artefact signatures (sex, stress, cell cycle ...) against all
+    significant features; False skips it, a mapping replaces the shipped panels. ``gene_sets`` adds
+    over-representation results for the up and down hits.
 
     ``p_shape_skip`` gives the reason the p-value histogram cannot be judged (for example the tool
     pre-filtered features before testing); the check is then recorded as not_run with that reason.
@@ -309,6 +316,11 @@ def contrast_unit(table: Table, *, unit_id: str, definition: str, n_features: in
         "p_histogram": h,
         "effect_quantiles": {f"q{int(q * 100):02d}": sig(quantile(effects, q), 3) for q in (0.01, 0.25, 0.5, 0.75, 0.99)},
     }
+    if technical_panels is not False:
+        significant = _rank([r for r in rows if _below(r["p_adj"], fdr) and abs(r["effect"]) > min_effect], has_stat)
+        facts.update(enrich.technical_signatures(
+            [_label(r) for r in rows], [_label(r) for r in significant],
+            None if technical_panels is True else technical_panels))
     facts.update(extra_facts or {})
 
     by_feature = {str(r["feature"]): r for r in rows}
@@ -341,6 +353,11 @@ def contrast_unit(table: Table, *, unit_id: str, definition: str, n_features: in
                             "down": [_feature_row(r, p_floor) for r in top_down]}
     unit["panel"] = panel_state
     unit["tail"] = {"n_shown": len(top_up) + len(top_down), "n_eligible": len(eligible), "rule": rule}
+    if gene_sets is not None:
+        tested = [_label(r) for r in rows]
+        sets_up, n_sets = enrich.enrichment(tested, [_label(r) for r in up], gene_sets)
+        sets_down, _ = enrich.enrichment(tested, [_label(r) for r in down], gene_sets)
+        unit["enrichment"] = {"n_sets_tested": n_sets, "up": sets_up, "down": sets_down}
     unit["trust"] = [check("pvalue_distribution", status, note)]
     return unit
 
@@ -348,6 +365,8 @@ def contrast_unit(table: Table, *, unit_id: str, definition: str, n_features: in
 def cluster_unit(table: Table, *, unit_id: str, n_features: int | None = None, fdr: float | None = None,
                  min_effect: float = 0.0, exclude: str | None = None, panel_values: Mapping[str, Any] | None = None,
                  size: Mapping[str, Any] | None = None, facts: Mapping[str, Any] | None = None,
+                 technical_panels: Mapping[str, Any] | bool = True,
+                 gene_sets: Mapping[str, Sequence[str]] | None = None,
                  p_floor: float | None = None) -> dict[str, Any]:
     """One cluster: its up-regulated markers against the rest, plus facts and panel supplied by the adapter."""
     n_features = n_features or DEFAULTS["n_features"]
@@ -363,15 +382,27 @@ def cluster_unit(table: Table, *, unit_id: str, n_features: int | None = None, f
     top = up[:n_features]
     rule = (f"p_adj < {_fmt(fdr)} and effect > {_fmt(min_effect)}, "
             f"ranked by {'stat' if has_stat else 'p then effect'}, top {n_features}")
-    return {
+    all_facts = dict(facts or {})
+    if technical_panels is not False:
+        # scored before the name exclusion, so mitochondrial and ribosomal signatures stay visible
+        significant = _rank([r for r in rows if _below(r["p_adj"], fdr) and r["effect"] > min_effect],
+                            has_stat, signed=1)
+        all_facts.update(enrich.technical_signatures(
+            [_label(r) for r in rows], [_label(r) for r in significant],
+            None if technical_panels is True else technical_panels))
+    unit = {
         "unit_id": str(unit_id),
         "unit_type": "cluster",
         "size": dict(size or {}),
-        "facts": dict(facts or {}),
+        "facts": all_facts,
         "top_features": [_feature_row(r, p_floor) for r in top],
         "panel": dict(panel_values or {}),
         "tail": {"n_shown": len(top), "n_eligible": len(up), "rule": rule},
     }
+    if gene_sets is not None:
+        sets_up, n_sets = enrich.enrichment([_label(r) for r in rows], [_label(r) for r in up], gene_sets)
+        unit["enrichment"] = {"n_sets_tested": n_sets, "up": sets_up}
+    return unit
 
 
 def cluster_facts(labels: Sequence[str], *, qc: Mapping[str, Sequence[float]] | None = None,
@@ -483,6 +514,23 @@ def standard_filters(fdr: float, n_features: int, min_effect: float, exclude: st
     return filters
 
 
+def _analysis_notes(technical_panels: Any, gene_sets: Any, gene_sets_name: str | None) -> dict[str, Any]:
+    cfg_t, cfg_e = CONTRACT["technical_flag"], CONTRACT["enrichment"]
+    notes: dict[str, Any] = {}
+    if technical_panels is not False:
+        notes["technical_panels"] = (
+            f"each panel is scored against all significant features; a panel is flagged at {cfg_t['min_hits']} or more hits, "
+            f"hypergeometric p < {_fmt(cfg_t['max_p'])}, and at least {cfg_t['min_top_share']:.0%} of the top {cfg_t['top_n']} hits")
+    if gene_sets is not None:
+        notes["enrichment"] = {
+            "gene_sets": gene_sets_name or "supplied by the analyst",
+            "n_sets": len(gene_sets),
+            "method": (f"one-sided hypergeometric test of the hits against the tested features, sets with at least "
+                       f"{cfg_e['min_set_size']} tested members, Benjamini-Hochberg across sets, p_adj < {_fmt(cfg_e['fdr'])}"),
+        }
+    return notes
+
+
 def dge_payload(tables: Mapping[str, Table], definitions: Mapping[str, str], *, analysis_id: str,
                 question: str | None, tool: str, steps: Sequence[str], n_observations: int,
                 observation_type: str = "sample", group_sizes: Mapping[str, int] | None = None,
@@ -496,8 +544,9 @@ def dge_payload(tables: Mapping[str, Table], definitions: Mapping[str, str], *, 
                 contrast_weights: Mapping[str, Mapping[str, float]] | None = None,
                 filters: Sequence[Mapping[str, str]] = (), source_tables: Mapping[str, str] | None = None,
                 run_extra: Mapping[str, Any] | None = None, dataset_reference: Mapping[str, Any] | None = None,
-                p_shape_skip: str | None = None, trust: Mapping[str, Any] | None = None,
-                p_floor: float | None = None) -> dict[str, Any]:
+                p_shape_skip: str | None = None, technical_panels: Mapping[str, Any] | bool = True,
+                gene_sets: Mapping[str, Sequence[str]] | None = None, gene_sets_name: str | None = None,
+                trust: Mapping[str, Any] | None = None, p_floor: float | None = None) -> dict[str, Any]:
     """A differential-analysis payload from one standard-column table per contrast."""
     n_features = n_features or DEFAULTS["n_features"]
     fdr = fdr or DEFAULTS["fdr"]
@@ -510,7 +559,8 @@ def dge_payload(tables: Mapping[str, Table], definitions: Mapping[str, str], *, 
         contrast_unit(t, unit_id=uid, definition=definitions[uid], n_features=n_features, fdr=fdr,
                       min_effect=min_effect, effect_cutoff=effect_cutoff, exclude=exclude, panel=panel,
                       size=(sizes or {}).get(uid), contrast_weights=(contrast_weights or {}).get(uid),
-                      p_shape_skip=p_shape_skip, p_floor=p_floor)
+                      p_shape_skip=p_shape_skip, technical_panels=technical_panels, gene_sets=gene_sets,
+                      p_floor=p_floor)
         for uid, t in tables.items()
     ]
     shapes = [(u["unit_id"], u["trust"][0]) for u in units]
@@ -533,6 +583,7 @@ def dge_payload(tables: Mapping[str, Table], definitions: Mapping[str, str], *, 
                                     "|stat| per direction" if has_stat else "p then |effect| per direction", filters),
         "p_floor": p_floor,
         "n_p_values_floored": sum(count_floored(t, p_floor) for t in tables.values()),
+        **_analysis_notes(technical_panels, gene_sets, gene_sets_name),
         **(run_extra or {}),
         "source_tables": dict(source_tables or {}),
     }
@@ -554,6 +605,8 @@ def clusters_payload(tables: Mapping[str, Table], *, analysis_id: str, question:
                      observation_type: str = "cell", n_features: int | None = None, fdr: float | None = None,
                      min_effect: float = 0.0, exclude: str | None = None, filters: Sequence[Mapping[str, str]] = (),
                      source_tables: Mapping[str, str] | None = None, run_extra: Mapping[str, Any] | None = None,
+                     technical_panels: Mapping[str, Any] | bool = True,
+                     gene_sets: Mapping[str, Sequence[str]] | None = None, gene_sets_name: str | None = None,
                      trust: Mapping[str, Any] | None = None, p_floor: float | None = None) -> dict[str, Any]:
     """A clusters payload from one standard-column marker table per cluster plus per-observation metadata."""
     n_features = n_features or DEFAULTS["n_features"]
@@ -572,7 +625,8 @@ def clusters_payload(tables: Mapping[str, Table], *, analysis_id: str, question:
         f = {**facts.get(uid, {}), **(extra_facts or {}).get(uid, {})}
         units.append(cluster_unit(
             t, unit_id=uid, n_features=n_features, fdr=fdr, min_effect=min_effect, exclude=exclude,
-            panel_values=(panel_values or {}).get(uid, {}), facts=f, p_floor=p_floor,
+            panel_values=(panel_values or {}).get(uid, {}), facts=f, technical_panels=technical_panels,
+            gene_sets=gene_sets, p_floor=p_floor,
             size={"n_cells": counts.get(uid, 0), "pct_of_total": sig(100 * counts.get(uid, 0) / n, 3)}))
 
     doublet_note = None
@@ -591,6 +645,7 @@ def clusters_payload(tables: Mapping[str, Table], *, analysis_id: str, question:
         "p_floor": p_floor,
         "n_p_values_floored": sum(count_floored(t, p_floor) for t in tables.values()),
         "panel_units": "mean expression across the unit's observations, in the units of the tested matrix",
+        **_analysis_notes(technical_panels, gene_sets, gene_sets_name),
         **(run_extra or {}),
         "source_tables": dict(source_tables or {}),
     }

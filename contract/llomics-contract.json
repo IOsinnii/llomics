@@ -1,41 +1,146 @@
 {
   "version": "0.1",
-  "statuses": ["pass", "warn", "fail", "not_run", "not_applicable"],
-  "note_required_for": ["warn", "fail", "not_applicable"],
-  "top_level_keys": ["llomics", "method", "run", "dataset", "trust", "units"],
-  "run_keys": ["analysis_id", "question", "tool", "steps", "filters", "source_tables"],
-  "dataset_keys": ["n_observations", "observation_type", "n_features", "reference"],
-  "unit_keys": ["unit_id", "unit_type", "top_features", "tail"],
-  "tail_keys": ["n_shown", "n_eligible"],
-  "p_value_keys": ["p", "p_adj", "padj", "pval", "pval_adj", "p_value", "pvalue", "q", "qvalue", "fdr"],
+  "statuses": [
+    "pass",
+    "warn",
+    "fail",
+    "not_run",
+    "not_applicable"
+  ],
+  "note_required_for": [
+    "warn",
+    "fail",
+    "not_applicable"
+  ],
+  "top_level_keys": [
+    "llomics",
+    "method",
+    "run",
+    "dataset",
+    "trust",
+    "units"
+  ],
+  "run_keys": [
+    "analysis_id",
+    "question",
+    "tool",
+    "steps",
+    "filters",
+    "source_tables"
+  ],
+  "dataset_keys": [
+    "n_observations",
+    "observation_type",
+    "n_features",
+    "reference"
+  ],
+  "unit_keys": [
+    "unit_id",
+    "unit_type",
+    "top_features",
+    "tail"
+  ],
+  "tail_keys": [
+    "n_shown",
+    "n_eligible"
+  ],
+  "p_value_keys": [
+    "p",
+    "p_adj",
+    "padj",
+    "pval",
+    "pval_adj",
+    "p_value",
+    "pvalue",
+    "q",
+    "qvalue",
+    "fdr"
+  ],
   "feature_columns": {
-    "required": ["feature", "effect", "p", "p_adj"],
-    "optional": ["symbol", "stat", "ave_expr", "pct_in", "pct_out"]
+    "required": [
+      "feature",
+      "effect",
+      "p",
+      "p_adj"
+    ],
+    "optional": [
+      "symbol",
+      "stat",
+      "ave_expr",
+      "pct_in",
+      "pct_out"
+    ]
   },
   "methods": {
     "clusters": {
-      "unit_types": ["cluster"],
-      "required_checks": ["pseudoreplication", "doublet_detection", "cluster_stability", "batch_integration"]
+      "unit_types": [
+        "cluster"
+      ],
+      "required_checks": [
+        "pseudoreplication",
+        "doublet_detection",
+        "cluster_stability",
+        "batch_integration"
+      ]
     },
     "dge": {
-      "unit_types": ["contrast"],
-      "required_checks": ["replicates", "pvalue_distribution", "batch_confounding", "multiple_testing", "mean_variance"]
+      "unit_types": [
+        "contrast"
+      ],
+      "required_checks": [
+        "replicates",
+        "pvalue_distribution",
+        "batch_confounding",
+        "multiple_testing",
+        "mean_variance"
+      ]
     },
     "pca": {
-      "unit_types": ["component"],
-      "required_checks": ["scaling_declared", "technical_covariate_association", "outlier_influence", "component_selection"]
+      "unit_types": [
+        "component"
+      ],
+      "required_checks": [
+        "scaling_declared",
+        "technical_covariate_association",
+        "outlier_influence",
+        "component_selection"
+      ]
     },
     "glm": {
-      "unit_types": ["model"],
-      "required_checks": ["convergence", "separation", "overdispersion", "collinearity", "events_per_variable"]
+      "unit_types": [
+        "model"
+      ],
+      "required_checks": [
+        "convergence",
+        "separation",
+        "overdispersion",
+        "collinearity",
+        "events_per_variable"
+      ]
     },
     "lasso": {
-      "unit_types": ["model"],
-      "required_checks": ["nested_cv", "leakage", "selection_stability", "null_comparison"]
+      "unit_types": [
+        "model"
+      ],
+      "required_checks": [
+        "nested_cv",
+        "leakage",
+        "selection_stability",
+        "null_comparison"
+      ]
     },
     "plsda": {
-      "unit_types": ["model", "component"],
-      "required_checks": ["permutation_test", "cv_performance", "overfit_gap", "leakage", "ncomp_selection"]
+      "unit_types": [
+        "model",
+        "component"
+      ],
+      "required_checks": [
+        "permutation_test",
+        "cv_performance",
+        "overfit_gap",
+        "leakage",
+        "ncomp_selection"
+      ]
     }
   },
   "defaults": {
@@ -55,5 +160,18 @@
   "batch_dominance": {
     "cluster_fraction": 0.9,
     "dataset_share_below": 0.7
+  },
+  "technical_flag": {
+    "min_hits": 3,
+    "max_p": 0.001,
+    "min_top_share": 0.2,
+    "top_n": 50
+  },
+  "enrichment": {
+    "min_set_size": 5,
+    "min_overlap": 2,
+    "fdr": 0.05,
+    "max_sets": 8,
+    "max_genes": 6
   }
 }

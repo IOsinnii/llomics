@@ -45,23 +45,25 @@ def split_by(table: dict[str, list[Any]], key: str) -> dict[str, dict[str, list[
 
 
 def build_dge() -> dict[str, Any]:
-    from llomics import core
+    from llomics import core, enrich
 
     args = json.loads((FIXTURES / "dge_args.json").read_text(encoding="utf-8"))
     tables = {uid: read_tsv(FIXTURES / f"dge_{uid}.tsv") for uid in args["definitions"]}
     definitions = args.pop("definitions")
-    return core.dge_payload(tables, definitions, **args)
+    return core.dge_payload(tables, definitions, gene_sets=enrich.read_gmt(FIXTURES / "sets.gmt"),
+                            gene_sets_name="sets.gmt", **args)
 
 
 def build_clusters() -> dict[str, Any]:
-    from llomics import core
+    from llomics import core, enrich
 
     args = json.loads((FIXTURES / "clusters_args.json").read_text(encoding="utf-8"))
     tables = split_by(read_tsv(FIXTURES / "markers.tsv"), "cluster")
     obs = read_tsv(FIXTURES / "obs.tsv")
     return core.clusters_payload(
         tables, labels=obs["label"], qc={"n_genes": obs["n_genes"], "pct_mt": obs["pct_mt"]},
-        doublet=obs["doublet"], batch=obs["batch"], sample=obs["sample"], **args)
+        doublet=obs["doublet"], batch=obs["batch"], sample=obs["sample"],
+        gene_sets=enrich.read_gmt(FIXTURES / "sets.gmt"), gene_sets_name="sets.gmt", **args)
 
 
 def differences(a: Any, b: Any, path: str = "payload", rel: float = 1.5e-3) -> list[str]:

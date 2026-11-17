@@ -209,7 +209,8 @@ llomics_contract <- function() {
 
 .contrast_unit <- function(table, unit_id, definition, n_features = NULL, fdr = NULL, min_effect = 0,
                            effect_cutoff = NULL, exclude = NULL, panel = character(0), size = NULL,
-                           extra_facts = NULL, contrast_weights = NULL, p_shape_skip = NULL, p_floor = NULL) {
+                           extra_facts = NULL, contrast_weights = NULL, p_shape_skip = NULL,
+                           technical_panels = TRUE, gene_sets = NULL, p_floor = NULL) {
   n_features <- n_features %||% .default("n_features")
   fdr <- fdr %||% .default("fdr")
   effect_cutoff <- effect_cutoff %||% .default("effect_cutoff")
@@ -244,7 +245,21 @@ llomics_contract <- function() {
     effect_quantiles = list(q01 = .sig(q[1], 3), q25 = .sig(q[2], 3), q50 = .sig(q[3], 3),
                             q75 = .sig(q[4], 3), q99 = .sig(q[5], 3))
   )
+  if (!isFALSE(technical_panels)) {
+    is_sig <- .below(rows$p_adj, fdr) & abs(rows$effect) > min_effect
+    significant <- .rank(rows[is_sig, , drop = FALSE], has_stat)
+    tech <- .technical_signatures(.label(rows), .label(significant),
+                                  if (isTRUE(technical_panels)) NULL else technical_panels)
+    facts[names(tech)] <- tech
+  }
   if (length(extra_facts)) facts[names(extra_facts)] <- extra_facts
+
+  enrichment <- NULL
+  if (!is.null(gene_sets)) {
+    e_up <- .enrichment(.label(rows), .label(up), gene_sets)
+    e_down <- .enrichment(.label(rows), .label(down), gene_sets)
+    enrichment <- list(n_sets_tested = e_up$n_tested, up = e_up$sets, down = e_down$sets)
+  }
 
   panel_state <- .empty_object()
   for (name in panel) {
@@ -277,12 +292,14 @@ llomics_contract <- function() {
     top_features = list(up = .feature_rows(top_up, p_floor), down = .feature_rows(top_down, p_floor)),
     panel = panel_state,
     tail = list(n_shown = nrow(top_up) + nrow(top_down), n_eligible = nrow(eligible), rule = rule),
+    enrichment = enrichment,
     trust = list(.check("pvalue_distribution", shape$status, shape$note))
   ))
 }
 
 .cluster_unit <- function(table, unit_id, n_features = NULL, fdr = NULL, min_effect = 0, exclude = NULL,
-                          panel_values = NULL, size = NULL, facts = NULL, p_floor = NULL) {
+                          panel_values = NULL, size = NULL, facts = NULL, technical_panels = TRUE,
+                          gene_sets = NULL, p_floor = NULL) {
   n_features <- n_features %||% .default("n_features")
   fdr <- fdr %||% .default("fdr")
   p_floor <- p_floor %||% .default("p_floor")
@@ -294,15 +311,30 @@ llomics_contract <- function() {
   top <- utils::head(up, n_features)
   rule <- sprintf("p_adj < %s and effect > %s, ranked by %s, top %d", .fmt(fdr), .fmt(min_effect),
                   if (has_stat) "stat" else "p then effect", as.integer(n_features))
-  list(
+  facts <- if (length(facts)) facts else .empty_object()
+  if (!isFALSE(technical_panels)) {
+    # scored before the name exclusion, so mitochondrial and ribosomal signatures stay visible
+    is_sig <- .below(rows$p_adj, fdr) & rows$effect > min_effect
+    significant <- .rank(rows[is_sig, , drop = FALSE], has_stat, signed = 1)
+    tech <- .technical_signatures(.label(rows), .label(significant),
+                                  if (isTRUE(technical_panels)) NULL else technical_panels)
+    facts[names(tech)] <- tech
+  }
+  enrichment <- NULL
+  if (!is.null(gene_sets)) {
+    e_up <- .enrichment(.label(rows), .label(up), gene_sets)
+    enrichment <- list(n_sets_tested = e_up$n_tested, up = e_up$sets)
+  }
+  .drop_null(list(
     unit_id = as.character(unit_id),
     unit_type = "cluster",
     size = if (length(size)) size else .empty_object(),
-    facts = if (length(facts)) facts else .empty_object(),
+    facts = facts,
     top_features = .feature_rows(top, p_floor),
     panel = if (length(panel_values)) panel_values else .empty_object(),
-    tail = list(n_shown = nrow(top), n_eligible = nrow(up), rule = rule)
-  )
+    tail = list(n_shown = nrow(top), n_eligible = nrow(up), rule = rule),
+    enrichment = enrichment
+  ))
 }
 
 # Per-cluster facts from per-observation metadata, each compared with the whole dataset.
@@ -413,6 +445,10 @@ llomics_contract <- function() {
 #' @param group_sizes Named vector of independent replicates per group.
 #' @param batch_crosstab Named list by group of named lists by batch with observation counts.
 #' @param trust Named list of declarations, e.g. `list(batch_confounding = c("not_applicable", "one run"))`.
+#' @param technical_panels TRUE scores the shipped artefact panels against the hits, FALSE skips it,
+#'   a named list replaces the panels.
+#' @param gene_sets Named list of character vectors (see `llomics_read_gmt()`) for over-representation
+#'   of the up and down hits. `gene_sets_name` records where they came from.
 #' @export
 llomics_dge_payload <- function(tables, definitions, analysis_id, question, tool, steps, n_observations,
                                 observation_type = "sample", group_sizes = NULL, units_are_replicates = TRUE,
@@ -422,7 +458,8 @@ llomics_dge_payload <- function(tables, definitions, analysis_id, question, tool
                                 fdr = NULL, min_effect = 0, effect_cutoff = NULL, exclude = NULL,
                                 panel = character(0), sizes = NULL, contrast_weights = NULL, filters = list(),
                                 source_tables = NULL, run_extra = NULL, dataset_reference = NULL,
-                                p_shape_skip = NULL, trust = NULL, p_floor = NULL) {
+                                p_shape_skip = NULL, technical_panels = TRUE, gene_sets = NULL,
+                                gene_sets_name = NULL, trust = NULL, p_floor = NULL) {
   n_features <- n_features %||% .default("n_features")
   fdr <- fdr %||% .default("fdr")
   p_floor <- p_floor %||% .default("p_floor")
@@ -435,7 +472,8 @@ llomics_dge_payload <- function(tables, definitions, analysis_id, question, tool
     .contrast_unit(tables[[uid]], unit_id = uid, definition = definitions[[uid]], n_features = n_features,
                    fdr = fdr, min_effect = min_effect, effect_cutoff = effect_cutoff, exclude = exclude,
                    panel = panel, size = sizes[[uid]], contrast_weights = contrast_weights[[uid]],
-                   p_shape_skip = p_shape_skip, p_floor = p_floor)
+                   p_shape_skip = p_shape_skip, technical_panels = technical_panels, gene_sets = gene_sets,
+                   p_floor = p_floor)
   })
   shape_status <- vapply(units, function(u) u$trust[[1]]$status, character(1))
   shape_note <- vapply(units, function(u) sprintf("%s: %s", u$unit_id, u$trust[[1]]$note), character(1))
@@ -460,6 +498,7 @@ llomics_dge_payload <- function(tables, definitions, analysis_id, question, tool
       p_floor = p_floor,
       n_p_values_floored = sum(vapply(tables, .count_floored, numeric(1), p_floor = p_floor))
     ),
+    .analysis_notes(technical_panels, gene_sets, gene_sets_name),
     run_extra,
     list(source_tables = if (length(source_tables)) as.list(source_tables) else .empty_object())
   )
@@ -484,8 +523,9 @@ llomics_clusters_payload <- function(tables, analysis_id, question, tool, steps,
                                      doublet = NULL, batch = NULL, sample = NULL, panel_values = NULL,
                                      extra_facts = NULL, n_dataset_features = NULL, observation_type = "cell",
                                      n_features = NULL, fdr = NULL, min_effect = 0, exclude = NULL,
-                                     filters = list(), source_tables = NULL, run_extra = NULL, trust = NULL,
-                                     p_floor = NULL) {
+                                     filters = list(), source_tables = NULL, run_extra = NULL,
+                                     technical_panels = TRUE, gene_sets = NULL, gene_sets_name = NULL,
+                                     trust = NULL, p_floor = NULL) {
   n_features <- n_features %||% .default("n_features")
   fdr <- fdr %||% .default("fdr")
   p_floor <- p_floor %||% .default("p_floor")
@@ -499,7 +539,8 @@ llomics_clusters_payload <- function(tables, analysis_id, question, tool, steps,
     if (length(extra)) f[names(extra)] <- extra
     n_cells <- sum(labels == uid)
     .cluster_unit(tables[[uid]], unit_id = uid, n_features = n_features, fdr = fdr, min_effect = min_effect,
-                  exclude = exclude, panel_values = panel_values[[uid]], facts = f, p_floor = p_floor,
+                  exclude = exclude, panel_values = panel_values[[uid]], facts = f,
+                  technical_panels = technical_panels, gene_sets = gene_sets, p_floor = p_floor,
                   size = list(n_cells = n_cells, pct_of_total = .sig(100 * n_cells / n, 3)))
   })
 
@@ -524,6 +565,7 @@ llomics_clusters_payload <- function(tables, analysis_id, question, tool, steps,
       n_p_values_floored = sum(vapply(tables, .count_floored, numeric(1), p_floor = p_floor)),
       panel_units = "mean expression across the unit's observations, in the units of the tested matrix"
     ),
+    .analysis_notes(technical_panels, gene_sets, gene_sets_name),
     run_extra,
     list(source_tables = if (length(source_tables)) as.list(source_tables) else .empty_object())
   )

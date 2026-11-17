@@ -18,6 +18,7 @@
     ],
     "p_floor": 1e-300,
     "n_p_values_floored": 0,
+    "technical_panels": "each panel is scored against all significant features; a panel is flagged at 3 or more hits, hypergeometric p < 0.001, and at least 20% of the top 50 hits",
     "design_columns": ["control", "treated"],
     "df_prior_median": 7.685,
     "df_prior_infinite": false,
@@ -104,7 +105,30 @@
           "q50": 0.0504,
           "q75": 0.244,
           "q99": 1.97
-        }
+        },
+        "n_panel_features_measured": 84,
+        "technical_signatures": {
+          "stress": {
+            "n_measured": 41,
+            "n_hits": 2,
+            "top_share": 0,
+            "p": 0.9948
+          },
+          "cell_cycle": {
+            "n_measured": 15,
+            "n_hits": 3,
+            "top_share": 0,
+            "p": 0.4651
+          },
+          "haemoglobin": {
+            "n_measured": 1,
+            "n_hits": 1,
+            "top_share": 0,
+            "p": 0.166
+          }
+        },
+        "technical_flags": [],
+        "n_technical_flags": 0
       },
       "top_features": {
         "up": [

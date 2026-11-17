@@ -15,12 +15,15 @@
 #' @param panel Feature IDs or symbols reported whether or not they rank.
 #' @param symbol_col Column of `fit$genes` holding readable names.
 #' @param mean_variance One of "voom", "trend", "none", "not_applicable". `eBayes(trend = TRUE)` is detected.
+#' @param gene_sets Named list of gene sets, or the path to a GMT file, for enrichment of the hits.
+#' @param technical_panels TRUE scores the shipped artefact panels against the hits; FALSE skips it.
 #' @param out_dir Where the payload and the full table per contrast are written. NULL writes nothing.
 #' @export
 llomics_limma <- function(fit, coefs, definitions, targets, group, analysis_id, question, steps,
                           batch = NULL, batch_in_design = NA, single_batch = FALSE, n_features = NULL,
                           panel = character(0), symbol_col = NULL, mean_variance = NULL, fdr = NULL,
                           min_effect = 0, effect_cutoff = NULL, exclude = NULL, filters = list(),
+                          gene_sets = NULL, gene_sets_name = NULL, technical_panels = TRUE,
                           trust = NULL, out_dir = ".") {
   if (!requireNamespace("limma", quietly = TRUE)) stop("the limma package is needed for llomics_limma()")
   if (!inherits(fit, "MArrayLM")) stop("`fit` must be a limma MArrayLM object")
@@ -31,6 +34,10 @@ llomics_limma <- function(fit, coefs, definitions, targets, group, analysis_id, 
   for (col in c(group, batch)) if (!col %in% colnames(targets)) stop("`", col, "` is not a column of `targets`")
   if (!is.null(symbol_col) && !symbol_col %in% colnames(fit$genes)) stop("`symbol_col` is not a column of fit$genes")
 
+  if (is.character(gene_sets) && length(gene_sets) == 1) {
+    gene_sets_name <- gene_sets_name %||% basename(gene_sets)
+    gene_sets <- llomics_read_gmt(gene_sets)
+  }
   group_n <- table(as.character(targets[[group]]))
   group_sizes <- as.list(stats::setNames(as.integer(group_n), names(group_n)))
 
@@ -80,6 +87,7 @@ llomics_limma <- function(fit, coefs, definitions, targets, group, analysis_id, 
       df_prior_median = if (all(is.finite(df_prior))) .sig(stats::median(df_prior)) else NA,
       df_prior_infinite = any(is.infinite(df_prior))
     ),
+    gene_sets = gene_sets, gene_sets_name = gene_sets_name, technical_panels = technical_panels,
     trust = trust
   )
   if (!is.null(out_dir)) llomics_write(payload, file.path(out_dir, paste0(analysis_id, ".llomics.json")))

@@ -41,13 +41,13 @@
       "id": "sex_imbalance",
       "truth": "No treatment effect. All treated samples are female and all controls male; sex is not recorded in the sample table. The hits are sex-linked genes.",
       "expected": "review",
-      "caught_by": "model"
+      "caught_by": "fact"
     },
     {
       "id": "stress_handling",
       "truth": "No treatment effect. Treated samples were processed later; immediate-early and heat-shock genes are up.",
       "expected": "review",
-      "caught_by": "model"
+      "caught_by": "fact"
     },
     {
       "id": "composition",
