@@ -3,8 +3,21 @@
 
 .panels_env <- new.env(parent = emptyenv())
 
-#' The technical panels shipped with llomics (sex, stress, cell cycle, haemoglobin, mitochondrial, ribosomal)
+#' The technical gene panels
+#'
+#' Six panels of genes that often dominate a hit list for technical rather than biological
+#' reasons: sex-linked genes, immediate-early and heat-shock genes from sample handling, cell-cycle
+#' genes, haemoglobin genes, and mitochondrial and ribosomal genes. Each is scored against the
+#' significant features of every unit; a panel that holds a large share of the hits is flagged.
+#' Matching ignores case, so mouse symbols match.
+#'
+#' @return A named list of panels. Each has a `description` and a `genes` list, a `pattern`
+#'   (regular expression), or both.
 #' @export
+#' @examples
+#' panels <- llomics_panels()
+#' names(panels)
+#' panels$sex$description
 llomics_panels <- function() {
   if (is.null(.panels_env$panels)) {
     path <- system.file("llomics-panels.json", package = "llomics")
@@ -16,9 +29,17 @@ llomics_panels <- function() {
 
 #' Read gene sets from a GMT file
 #'
-#' One set per line: name, description, then members, tab-separated.
-#' @return A named list of character vectors.
+#' Reads the GMT format used by MSigDB and most enrichment tools: one set per line, with the set
+#' name, a description, and the member genes, separated by tabs.
+#'
+#' @param path Path of a GMT file.
+#' @return A named list of character vectors, one per gene set.
 #' @export
+#' @examples
+#' gmt <- tempfile(fileext = ".gmt")
+#' writeLines(c("SET_A\tfirst set\tGENE1\tGENE2\tGENE3",
+#'              "SET_B\tsecond set\tGENE4\tGENE5"), gmt)
+#' llomics_read_gmt(gmt)
 llomics_read_gmt <- function(path) {
   lines <- readLines(path, warn = FALSE, encoding = "UTF-8")
   sets <- list()

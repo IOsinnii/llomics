@@ -8,8 +8,19 @@
 
 .contract_env <- new.env(parent = emptyenv())
 
-#' The llomics contract shared by R, Python and the validator
+#' The llomics contract
+#'
+#' The rules a payload follows, shared by the R package, the Python package and the validator:
+#' the allowed check statuses, the methods with their unit types and required quality checks,
+#' the defaults, and the thresholds of the heuristic checks.
+#'
+#' @return A named list read from the `llomics-contract.json` file shipped with the package.
 #' @export
+#' @examples
+#' contract <- llomics_contract()
+#' contract$version
+#' contract$methods$dge$required_checks
+#' contract$defaults$n_features
 llomics_contract <- function() {
   if (is.null(.contract_env$contract)) {
     path <- system.file("llomics-contract.json", package = "llomics")
@@ -435,21 +446,67 @@ llomics_contract <- function() {
 
 #' Build a differential-analysis payload from standard-column tables
 #'
-#' The generic entry point for any tool: one data.frame per contrast with the columns
-#' `feature`, `effect`, `p`, `p_adj` and optionally `symbol`, `stat`, `ave_expr`, `pct_in`, `pct_out`.
+#' The generic entry point for any differential test: limma, DESeq2, edgeR, or your own. Rename the
+#' result columns to the standard names and pass one table per contrast. The function picks the
+#' eligible features, ranks them, keeps the top `n_features` per direction, counts the rest,
+#' scores the technical panels, runs the enrichment if gene sets are given, and computes the
+#' quality checks it can from what you supply. A check it cannot compute is recorded as
+#' `"not_run"`, never left out.
 #'
-#' @param tables Named list of data.frames, one per contrast.
-#' @param definitions Named character vector: each contrast in words, including the direction.
-#' @param n_features How many features to load per direction. Never padded.
-#' @param panel Features reported for every contrast whether or not they rank.
-#' @param group_sizes Named vector of independent replicates per group.
-#' @param batch_crosstab Named list by group of named lists by batch with observation counts.
-#' @param trust Named list of declarations, e.g. `list(batch_confounding = c("not_applicable", "one run"))`.
-#' @param technical_panels TRUE scores the shipped artefact panels against the hits, FALSE skips it,
-#'   a named list replaces the panels.
-#' @param gene_sets Named list of character vectors (see `llomics_read_gmt()`) for over-representation
-#'   of the up and down hits. `gene_sets_name` records where they came from.
+#' @inheritParams llomics-params
+#' @param tables Named list of data frames, one per contrast. Required columns: `feature`,
+#'   `effect`, `p`, `p_adj`. Optional: `symbol`, `stat`, `ave_expr`, `pct_in`, `pct_out`. Rows with
+#'   a missing `p` or `effect` are dropped; a missing `p_adj` is kept and never eligible.
+#' @param definitions Named character vector with one entry per contrast: the comparison in words,
+#'   including which direction is positive, for example
+#'   `"treated - control, adjusted for batch; positive effect = higher in treated"`.
+#' @param n_observations Number of observations (samples or cells) in the analysis.
+#' @param group_sizes Named list or vector of independent replicates per group. `NULL` records the
+#'   replicates check as `"not_run"`.
+#' @param units_are_replicates `TRUE` when the test's observations are independent biological
+#'   replicates. `FALSE` for cell-level tests: the replicates check then warns that p-values do not
+#'   reflect variation between samples.
+#' @param batch_crosstab Observation counts per group and batch, as a named list by group of named
+#'   lists by batch. `NULL` records the batch check as `"not_run"`.
+#' @param batch_in_design Is batch a term in the model? `TRUE`, `FALSE`, or `NA` when not declared.
+#' @param batch_adjustable `FALSE` when the test cannot include covariates, such as a Wilcoxon test.
+#' @param single_batch `TRUE` declares that all observations come from one batch.
+#' @param mean_variance How the mean-variance relationship was handled: `"voom"`, `"trend"`, another
+#'   description, `"none"`, or `"not_applicable"`. `NULL` records the check as `"not_run"` unless
+#'   `mean_variance_detected` is given.
+#' @param mean_variance_detected Description of a mean-variance model detected from the fit, used
+#'   when `mean_variance` is `NULL`.
+#' @param correction Name of the multiple-testing correction behind `p_adj`.
+#' @param min_replicates Replicates per group needed for the replicates check to pass. `NULL` uses
+#'   the contract default (3).
+#' @param sizes Named list by contrast of further size fields, such as cells per group.
+#' @param contrast_weights Named list by contrast of the contrast's weight for each design column.
+#' @param dataset_reference Named list of further dataset-wide reference values.
+#' @param p_shape_skip Reason the p-value histogram cannot be judged, for example because the tool
+#'   tested only pre-filtered features. The check is then recorded as `"not_run"` with this reason.
+#' @return The payload, a named list with the elements `llomics`, `method` (`"dge"`), `run`,
+#'   `dataset`, `trust` and `units`. Write it with [llomics_write()].
+#' @seealso [llomics_limma()] and [llomics_FindMarkers()], which call this function.
 #' @export
+#' @examples
+#' set.seed(1)
+#' n <- 200
+#' effect <- c(rnorm(20, 2), rnorm(n - 20, 0, 0.3))
+#' p <- 2 * stats::pnorm(-abs(effect / 0.4))
+#' result <- data.frame(feature = sprintf("gene%03d", 1:n), effect = effect, stat = effect / 0.4,
+#'                      p = p, p_adj = stats::p.adjust(p, "BH"))
+#' payload <- llomics_dge_payload(
+#'   list(treated_vs_control = result),
+#'   c(treated_vs_control = "treated - control; positive effect = higher in treated"),
+#'   analysis_id = "example", question = "Which genes respond to treatment?",
+#'   tool = "example test", steps = "simulated", n_observations = 8,
+#'   group_sizes = list(control = 4, treated = 4), n_features = 5,
+#'   panel = c("gene001", "not_measured"))
+#' unit <- payload$units[[1]]
+#' unit$facts$n_hits
+#' unit$top_features$up
+#' unit$panel$not_measured   # NA: not measured, written as null
+#' vapply(payload$trust, function(x) x$status, "")
 llomics_dge_payload <- function(tables, definitions, analysis_id, question, tool, steps, n_observations,
                                 observation_type = "sample", group_sizes = NULL, units_are_replicates = TRUE,
                                 batch_crosstab = NULL, batch_in_design = NA, batch_adjustable = TRUE,
@@ -511,14 +568,48 @@ llomics_dge_payload <- function(tables, definitions, analysis_id, question, tool
   .envelope("dge", run, dataset, .apply_trust_overrides(checks, trust), units)
 }
 
-#' Build a clusters payload from standard-column marker tables and per-observation metadata
+#' Build a clusters payload from standard-column marker tables
 #'
-#' @param tables Named list of data.frames, one per cluster (markers against the rest).
+#' The generic entry point for cluster markers from any tool. Pass one marker table per cluster,
+#' each tested against all other observations, and the per-observation metadata. Each cluster
+#' becomes a unit with its top up-regulated markers, its quality-control medians compared with the
+#' whole dataset, its doublet fraction, the panel values you supply, and the technical-panel
+#' scores.
+#'
+#' @inheritParams llomics-params
+#' @param tables Named list of data frames, one per cluster, with the columns `feature`, `effect`,
+#'   `p`, `p_adj` and optionally `symbol`, `stat`, `pct_in`, `pct_out`.
+#' @param test Name of the marker test, used in the pseudoreplication note.
 #' @param labels Cluster label of every observation.
-#' @param qc Named list of numeric QC vectors, one value per observation.
+#' @param qc Named list of numeric quality-control vectors, one value per observation. Each is
+#'   summarised per cluster and compared with the dataset median.
 #' @param doublet,batch,sample Per-observation predicted-doublet flag, batch and biological sample.
-#' @param panel_values Named list by cluster of named lists of panel values (NA for not measured).
+#'   `NULL` records the related check as `"not_run"`.
+#' @param panel_values Named list by cluster of named lists of panel values, such as mean
+#'   expression. Use `NA` for features that were not measured.
+#' @param extra_facts Named list by cluster of further facts to add to each unit.
+#' @param n_dataset_features Number of features in the dataset. `NULL` uses the longest table.
+#' @return The payload, a named list with the elements `llomics`, `method` (`"clusters"`), `run`,
+#'   `dataset`, `trust` and `units`. Write it with [llomics_write()].
+#' @seealso [llomics_FindAllMarkers()], which calls this function.
 #' @export
+#' @examples
+#' set.seed(1)
+#' markers <- function(top) {
+#'   effect <- c(rnorm(top, 2.5), rnorm(60 - top, 0, 0.3))
+#'   p <- 2 * stats::pnorm(-abs(effect / 0.5))
+#'   data.frame(feature = sprintf("G%02d", 1:60), effect = effect, p = p,
+#'              p_adj = stats::p.adjust(p, "BH"))
+#' }
+#' labels <- rep(c("a", "b"), times = c(70, 30))
+#' payload <- llomics_clusters_payload(
+#'   list(a = markers(8), b = markers(4)),
+#'   analysis_id = "example", question = "Which cell type is each cluster?",
+#'   tool = "example test", steps = "simulated", test = "wilcoxon test", labels = labels,
+#'   qc = list(n_genes = round(runif(100, 800, 3000))),
+#'   doublet = runif(100) < 0.05, n_features = 4)
+#' payload$units[[2]]$facts
+#' payload$units[[2]]$top_features
 llomics_clusters_payload <- function(tables, analysis_id, question, tool, steps, test, labels, qc = NULL,
                                      doublet = NULL, batch = NULL, sample = NULL, panel_values = NULL,
                                      extra_facts = NULL, n_dataset_features = NULL, observation_type = "cell",
@@ -580,7 +671,22 @@ llomics_clusters_payload <- function(tables, analysis_id, question, tool, steps,
 }
 
 #' Write a payload to a JSON file
+#'
+#' Writes the payload with arrays kept as arrays, missing values as `null`, and full numeric
+#' precision. Parent folders are created.
+#'
+#' @param payload A payload, as returned by the `llomics_*` builders.
+#' @param out Path of the JSON file to write.
+#' @return `out`, invisibly.
 #' @export
+#' @examples
+#' result <- data.frame(feature = c("a", "b"), effect = c(2, -0.1), p = c(1e-6, 0.6),
+#'                      p_adj = c(1e-5, 0.6))
+#' payload <- llomics_dge_payload(list(x = result), c(x = "x - y"), analysis_id = "example",
+#'                                question = "q", tool = "t", steps = "s", n_observations = 4)
+#' path <- file.path(tempdir(), "example.llomics.json")
+#' llomics_write(payload, path)
+#' substr(readLines(path)[1:3], 1, 40)
 llomics_write <- function(payload, out) {
   dir.create(dirname(out), recursive = TRUE, showWarnings = FALSE)
   jsonlite::write_json(payload, out, auto_unbox = TRUE, null = "null", na = "null", digits = NA, pretty = TRUE)
@@ -590,8 +696,26 @@ llomics_write <- function(payload, out) {
 
 #' Validate a payload file against the contract
 #'
-#' Runs the shared Python validator shipped with the package. Needs a `python` (3.9 or later) on the path.
+#' Runs the validator shipped with the package, the same one used by the Python package. It checks
+#' the required fields, the required quality checks for the method, p-values of exactly zero or
+#' outside (0, 1], missing or infinite numbers, and tail counts, and prints a report.
+#'
+#' @param path Path of a payload JSON file.
+#' @param python Path of a Python (3.9 or later) executable. By default the first of `python3` and
+#'   `python` found on the path.
+#' @return `TRUE` invisibly when the payload is valid, `FALSE` otherwise.
 #' @export
+#' @examples
+#' python <- Sys.which(c("python3", "python"))
+#' if (any(nzchar(python))) {
+#'   result <- data.frame(feature = c("a", "b"), effect = c(2, -0.1), p = c(1e-6, 0.6),
+#'                        p_adj = c(1e-5, 0.6))
+#'   payload <- llomics_dge_payload(list(x = result), c(x = "x - y"), analysis_id = "example",
+#'                                  question = "q", tool = "t", steps = "s", n_observations = 4)
+#'   path <- file.path(tempdir(), "example.llomics.json")
+#'   llomics_write(payload, path)
+#'   llomics_validate(path)
+#' }
 llomics_validate <- function(path, python = Sys.which(c("python3", "python"))) {
   python <- python[nzchar(python)][1]
   if (is.na(python)) stop("no python found on the path; run validate_payload.py by hand")

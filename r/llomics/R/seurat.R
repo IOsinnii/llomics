@@ -35,22 +35,49 @@
 
 #' Run Seurat::FindAllMarkers and build an llomics payload from the result
 #'
-#' One cluster unit per identity class. Extra arguments go to `Seurat::FindAllMarkers()`.
+#' Each identity class becomes a cluster unit with its top markers, the fraction of cells
+#' expressing each one inside and outside the cluster, its quality-control medians compared with
+#' the whole dataset, its nearest cluster in PCA space, and the mean expression of the panel
+#' features. Seurat reports no test statistic, so markers are ranked by adjusted p-value and then
+#' fold change.
 #'
+#' @inheritParams llomics-params
 #' @param object A Seurat object with identities set.
-#' @param n_features How many markers to load per cluster. Never padded.
-#' @param panel Features whose mean expression is reported for every cluster. A feature that is
-#'   not in the object is written as null.
-#' @param question The scientific question, in a sentence. It is sent to the model with every unit.
-#' @param out Path for the payload JSON. The full marker table is written next to it.
-#' @param fdr,min_logfc,exclude Eligibility filter for the top markers.
-#' @param sample_col,batch_col,doublet_col Metadata columns feeding the trust checks.
-#' @param qc_cols Metadata columns summarised per cluster and compared with the dataset.
-#' @param trust Declarations, e.g. `list(cluster_stability = c("pass", "stable across resolutions"))`.
+#' @param n_features Markers loaded per cluster. Never padded. `NULL` uses the contract default (15).
+#' @param panel Features whose mean expression is reported for every cluster. A feature that is not
+#'   in the object is written as `null`.
+#' @param analysis_id Short identifier for the analysis, stored in the run card.
+#' @param out Path for the payload JSON. The full marker table is written next to it. `NULL`
+#'   writes nothing.
+#' @param min_logfc Log fold change a marker must exceed to be eligible for the top list.
+#' @param exclude Regular expression. Markers whose names match are left out of the top list. The
+#'   default excludes mitochondrial, ribosomal-protein and MALAT1 genes.
+#' @param sample_col,batch_col,doublet_col Metadata columns holding the biological sample, the
+#'   batch and the predicted-doublet flag. They feed the quality checks; a missing one records the
+#'   related check as `"not_run"`.
+#' @param qc_cols Metadata columns summarised per cluster and compared with the dataset median.
+#'   Columns that are absent are skipped.
+#' @param steps Character vector describing the analysis. `NULL` uses the names of the commands
+#'   logged in the Seurat object.
 #' @param markers An existing `FindAllMarkers()` result to use instead of running the test.
-#' @param gene_sets Named list of gene sets, or the path to a GMT file, for enrichment of the hits.
-#' @param technical_panels TRUE scores the shipped artefact panels against the hits; FALSE skips it.
+#' @param write_table Also write the full marker table next to `out`.
+#' @param gene_sets Gene sets for enrichment of the markers: a named list of character vectors, or
+#'   the path to a GMT file.
+#' @param ... Passed to `Seurat::FindAllMarkers()`.
+#' @return The payload, invisibly. See [llomics_clusters_payload()].
 #' @export
+#' @examples
+#' \donttest{
+#' if (requireNamespace("Seurat", quietly = TRUE) &&
+#'     requireNamespace("SeuratObject", quietly = TRUE)) {
+#'   data("pbmc_small", package = "SeuratObject")
+#'   payload <- llomics_FindAllMarkers(pbmc_small, n_features = 5,
+#'                                     panel = c("CD3D", "MS4A1", "LYZ"),
+#'                                     question = "Which cell type is each cluster?",
+#'                                     verbose = FALSE)
+#'   payload$units[[1]]$top_features
+#' }
+#' }
 llomics_FindAllMarkers <- function(object, n_features = NULL, panel = character(0), question = NULL,
                                    analysis_id = NULL, out = NULL, fdr = NULL, min_logfc = 0,
                                    exclude = llomics_contract()$defaults$exclude, sample_col = NULL,
@@ -137,16 +164,35 @@ llomics_FindAllMarkers <- function(object, n_features = NULL, panel = character(
 
 #' Run Seurat::FindMarkers and build an llomics payload from the result
 #'
-#' One contrast unit: `ident.1` against `ident.2` (or against all other cells). Extra arguments go
-#' to `Seurat::FindMarkers()`. For a p-value histogram that can be judged, pass
-#' `logfc.threshold = 0, min.pct = 0` so that every feature is tested.
+#' Builds one contrast unit: `ident.1` against `ident.2`, or against all other cells. By default
+#' Seurat tests only features passing `logfc.threshold` and `min.pct`; the p-value histogram is then
+#' not a sample of all features and its check is recorded as `"not_run"`. Pass
+#' `logfc.threshold = 0, min.pct = 0` to test every feature.
 #'
 #' @inheritParams llomics_FindAllMarkers
-#' @param ident.1,ident.2,group.by As in `Seurat::FindMarkers()`.
-#' @param n_features How many features to load per direction.
+#' @param ident.1,ident.2,group.by As in `Seurat::FindMarkers()`. With `ident.2 = NULL` the
+#'   comparison is against all other cells.
+#' @param n_features Features loaded per direction. Never padded. `NULL` uses the contract default
+#'   (15).
 #' @param panel Features reported with their statistics whether or not they rank.
 #' @param markers An existing `FindMarkers()` result to use instead of running the test.
+#' @param sample_col,batch_col Metadata columns holding the biological sample and the batch of each
+#'   cell. They feed the replicates and batch checks; a missing one records the check as `"not_run"`.
+#' @param ... Passed to `Seurat::FindMarkers()`.
+#' @return The payload, invisibly. See [llomics_dge_payload()].
 #' @export
+#' @examples
+#' \donttest{
+#' if (requireNamespace("Seurat", quietly = TRUE) &&
+#'     requireNamespace("SeuratObject", quietly = TRUE)) {
+#'   data("pbmc_small", package = "SeuratObject")
+#'   payload <- llomics_FindMarkers(pbmc_small, ident.1 = "0", ident.2 = "1",
+#'                                  logfc.threshold = 0, min.pct = 0, n_features = 5,
+#'                                  question = "How do clusters 0 and 1 differ?",
+#'                                  verbose = FALSE)
+#'   payload$units[[1]]$top_features
+#' }
+#' }
 llomics_FindMarkers <- function(object, ident.1, ident.2 = NULL, group.by = NULL, n_features = NULL,
                                 panel = character(0), question = NULL, analysis_id = NULL, out = NULL,
                                 fdr = NULL, min_logfc = 0, exclude = llomics_contract()$defaults$exclude,

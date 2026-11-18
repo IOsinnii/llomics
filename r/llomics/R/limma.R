@@ -2,29 +2,54 @@
 
 #' Build an llomics payload from a limma fit
 #'
-#' Call it after `eBayes()` (or `treat()`). One unit per coefficient in `coefs`.
+#' Call it after `limma::eBayes()` or `limma::treat()`. Each coefficient in `coefs` becomes one
+#' contrast unit. The quality checks are computed from the fit and the sample table where possible:
+#' replicates per group, the shape of the p-value histogram, group-by-batch confounding, and
+#' `eBayes(trend = TRUE)`. What cannot be read from the fit, such as whether batch is in the design
+#' or whether voom was used, is declared through the arguments.
 #'
-#' @param fit A limma `MArrayLM` with moderated statistics.
-#' @param coefs Coefficient (contrast) names to report.
-#' @param definitions Named character vector: each contrast in words, including the direction,
-#'   e.g. `c(stim_vs_ctrl = "stimulated - control, adjusted for batch; positive effect = higher in stimulated")`.
-#' @param targets Sample table, one row per sample in the design.
-#' @param group,batch Column names in `targets`.
-#' @param batch_in_design Is batch a term in the design? Declare it; it cannot be read from the fit.
-#' @param n_features How many features to load per direction.
-#' @param panel Feature IDs or symbols reported whether or not they rank.
-#' @param symbol_col Column of `fit$genes` holding readable names.
-#' @param mean_variance One of "voom", "trend", "none", "not_applicable". `eBayes(trend = TRUE)` is detected.
-#' @param gene_sets Named list of gene sets, or the path to a GMT file, for enrichment of the hits.
-#' @param technical_panels TRUE scores the shipped artefact panels against the hits; FALSE skips it.
-#' @param out_dir Where the payload and the full table per contrast are written. NULL writes nothing.
+#' @inheritParams llomics-params
+#' @inheritParams llomics_dge_payload
+#' @param fit A limma `MArrayLM` object with moderated statistics.
+#' @param coefs Names of the coefficients (contrasts) to report.
+#' @param targets Sample table with one row per sample in the design.
+#' @param group Column of `targets` holding the group of each sample.
+#' @param batch Column of `targets` holding the batch of each sample. `NULL` records the batch
+#'   check as `"not_run"`.
+#' @param symbol_col Column of `fit$genes` holding readable feature names.
+#' @param gene_sets Gene sets for enrichment of the hits: a named list of character vectors, or the
+#'   path to a GMT file.
+#' @param out_dir Folder for the payload (`<analysis_id>.llomics.json`) and one full table per
+#'   contrast. `NULL` (the default) writes nothing.
+#' @return The payload, invisibly. See [llomics_dge_payload()].
 #' @export
+#' @examples
+#' if (requireNamespace("limma", quietly = TRUE)) {
+#'   set.seed(1)
+#'   targets <- data.frame(group = rep(c("control", "treated"), each = 4),
+#'                         batch = rep(c("b1", "b2"), times = 4))
+#'   expr <- matrix(rnorm(300 * 8, mean = 7, sd = 0.4), nrow = 300,
+#'                  dimnames = list(sprintf("G%03d", 1:300), NULL))
+#'   expr[1:20, 5:8] <- expr[1:20, 5:8] + 2
+#'   design <- stats::model.matrix(~ 0 + group + batch, data = targets)
+#'   colnames(design) <- c("control", "treated", "batch_b2")
+#'   fit <- limma::lmFit(expr, design)
+#'   contrasts <- limma::makeContrasts(treated_vs_control = treated - control, levels = design)
+#'   fit <- limma::eBayes(limma::contrasts.fit(fit, contrasts), trend = TRUE)
+#'   payload <- llomics_limma(
+#'     fit, coefs = "treated_vs_control",
+#'     definitions = c(treated_vs_control = "treated - control, adjusted for batch"),
+#'     targets = targets, group = "group", batch = "batch", batch_in_design = TRUE,
+#'     analysis_id = "example", question = "Which genes respond to treatment?",
+#'     steps = c("lmFit ~ 0 + group + batch", "eBayes(trend = TRUE)"), n_features = 5)
+#'   vapply(payload$trust, function(x) x$status, "")
+#' }
 llomics_limma <- function(fit, coefs, definitions, targets, group, analysis_id, question, steps,
                           batch = NULL, batch_in_design = NA, single_batch = FALSE, n_features = NULL,
                           panel = character(0), symbol_col = NULL, mean_variance = NULL, fdr = NULL,
                           min_effect = 0, effect_cutoff = NULL, exclude = NULL, filters = list(),
                           gene_sets = NULL, gene_sets_name = NULL, technical_panels = TRUE,
-                          trust = NULL, out_dir = ".") {
+                          trust = NULL, out_dir = NULL) {
   if (!requireNamespace("limma", quietly = TRUE)) stop("the limma package is needed for llomics_limma()")
   if (!inherits(fit, "MArrayLM")) stop("`fit` must be a limma MArrayLM object")
   if (is.null(fit$t) || is.null(fit$p.value)) stop("`fit` has no moderated statistics: run eBayes() or treat() first")

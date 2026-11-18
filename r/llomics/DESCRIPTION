@@ -13,3 +13,4 @@ Depends: R (>= 4.1)
 Imports: jsonlite, stats, utils
 Suggests: limma, Seurat, SeuratObject, testthat (>= 3.0.0)
 Config/testthat/edition: 3
+RoxygenNote: 7.3.3
