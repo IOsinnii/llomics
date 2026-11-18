@@ -215,33 +215,37 @@ def judgment_reasons(summary: dict[str, Any], runs: list[dict[str, Any]], gates:
     return reasons
 
 
-def judge_units(
+def build_requests(payload: dict[str, Any], cfg: dict[str, Any], limit: int | None = None) -> list[dict[str, Any]]:
+    """One request per unit (the first ``limit`` units if given), in payload order."""
+    units = payload["units"][:limit] if limit else payload["units"]
+    return [build_request(payload, u, cfg) for u in units]
+
+
+def gate_units(
     payload: dict[str, Any],
     cfg: dict[str, Any],
-    call: Callable[[dict[str, Any]], dict[str, Any]] | None,
-    n_runs: int,
-    workers: int,
+    all_runs: list[list[dict[str, Any]]] | None,
     limit: int | None = None,
 ) -> list[dict[str, Any]]:
-    """Ask every unit n_runs times (unless call is None) and apply the gates."""
+    """Apply the gates to every unit, given the runs already made for each (None: the model was not asked).
+
+    Separate from the asking so that a caller without threads (a browser) can make the requests itself,
+    and so that saved runs can be gated again under different gate settings.
+    """
     gates = cfg.get("gates", {})
     units = payload["units"][:limit] if limit else payload["units"]
-    requests = [build_request(payload, u, cfg) for u in units]
-
-    all_runs: list[list[dict[str, Any]]] = [[] for _ in units]
-    if call is not None:
-        jobs = [(i, requests[i]) for i in range(len(units)) for _ in range(n_runs)]
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            for (i, _), result in zip(jobs, pool.map(lambda job: call(job[1]), jobs)):
-                all_runs[i].append(result)
-
+    requests = build_requests(payload, cfg, limit)
+    asked = all_runs is not None
+    if asked and len(all_runs) != len(units):
+        raise ValueError(f"runs given for {len(all_runs)} unit(s), payload has {len(units)}")
     results = []
-    for unit, request, runs in zip(units, requests, all_runs):
+    for i, (unit, request) in enumerate(zip(units, requests)):
+        runs = all_runs[i] if asked else []
         reasons = trust_reasons(payload, unit, gates) + fact_reasons(unit, gates)
         summary = summarise(runs, cfg["questions"]) if runs else {}
-        if call is not None:
+        if asked:
             reasons += judgment_reasons(summary, runs, gates)
-        status = "not_asked" if call is None and not reasons else ("review" if reasons else "auto")
+        status = "not_asked" if not asked and not reasons else ("review" if reasons else "auto")
         results.append({
             "unit_id": unit["unit_id"],
             "status": status,
@@ -251,6 +255,26 @@ def judge_units(
             "request": request,
         })
     return results
+
+
+def judge_units(
+    payload: dict[str, Any],
+    cfg: dict[str, Any],
+    call: Callable[[dict[str, Any]], dict[str, Any]] | None,
+    n_runs: int,
+    workers: int,
+    limit: int | None = None,
+) -> list[dict[str, Any]]:
+    """Ask every unit n_runs times (unless call is None) and apply the gates."""
+    if call is None:
+        return gate_units(payload, cfg, None, limit)
+    requests = build_requests(payload, cfg, limit)
+    all_runs: list[list[dict[str, Any]]] = [[] for _ in requests]
+    jobs = [(i, requests[i]) for i in range(len(requests)) for _ in range(n_runs)]
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for (i, _), result in zip(jobs, pool.map(lambda job: call(job[1]), jobs)):
+            all_runs[i].append(result)
+    return gate_units(payload, cfg, all_runs, limit)
 
 
 def main() -> int:

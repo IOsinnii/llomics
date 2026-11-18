@@ -114,6 +114,19 @@ class Judge(unittest.TestCase):
         result = self.jb.judge_units(payload, self.cfg, call, 3, 2)[0]
         self.assertEqual(result["reasons"], ["trust:batch_confounding:not_run", "too_few_hits"])
 
+    def test_saved_runs_gate_as_when_they_were_asked(self):
+        bad = dict(self.GOOD, dominant_signal="no recognisable pattern")
+        runs = [{"ok": True, "answers": a} for a in (self.GOOD, self.GOOD, bad)]
+        asked = self.jb.judge_units(self.payload, self.cfg, self.sequence(runs), 3, 1)[0]
+        regated = self.jb.gate_units(self.payload, self.cfg, [runs])[0]
+        self.assertEqual(regated, asked)
+        with self.assertRaises(ValueError):
+            self.jb.gate_units(self.payload, self.cfg, [runs, runs])
+
+    def test_requests_need_no_model(self):
+        requests = self.jb.build_requests(self.payload, self.cfg)
+        self.assertEqual(requests, [self.jb.judge_units(self.payload, self.cfg, None, 0, 1)[0]["request"]])
+
     def test_dry_run_sends_nothing(self):
         result = self.jb.judge_units(self.payload, self.cfg, None, 0, 1)[0]
         self.assertEqual((result["status"], result["runs"]), ("not_asked", []))

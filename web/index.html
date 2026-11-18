@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>llomics in the browser</title>
+  <meta name="description" content="Try llomics without installing it: build, check and inspect LLM-ready payloads from omics results, in your browser.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <div class="brand">
+        <h1>llomics <span class="muted">in the browser</span></h1>
+        <p class="lede">Turn a 20,000-row results table into a small payload an LLM can reason over, and decide in code what its answers are allowed to settle.</p>
+      </div>
+      <div class="meta">
+        <span id="engine" class="engine" role="status" aria-live="polite">Starting Python…</span>
+        <a href="https://github.com/IOsinnii/llomics">Source on GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="pattern wrap" aria-label="How llomics works">
+    <ol class="flow">
+      <li><strong>Pipeline result</strong><span>a differential table or marker table, often thousands of rows</span></li>
+      <li><strong>Wrap</strong><span>code builds one small state per contrast or cluster, with its quality checks</span></li>
+      <li><strong>Ask</strong><span>the model answers fixed questions about one unit at a time</span></li>
+      <li><strong>Gate</strong><span>code sends each unit to <em>auto</em> or <em>review</em>, with a reason code</span></li>
+    </ol>
+    <p class="note">Everything on this page runs in your browser with Pyodide, the same Python code as the package. Files you load are not uploaded anywhere, and this demo makes no model calls.</p>
+  </section>
+
+  <nav class="tabs wrap" role="tablist" aria-label="Sections">
+    <button role="tab" id="tab-problems" aria-controls="panel-problems" aria-selected="true">Planted problems</button>
+    <button role="tab" id="tab-build" aria-controls="panel-build" aria-selected="false">Build a payload</button>
+    <button role="tab" id="tab-inspect" aria-controls="panel-inspect" aria-selected="false">Inspect a payload</button>
+  </nav>
+
+  <main class="wrap">
+    <section id="panel-problems" role="tabpanel" aria-labelledby="tab-problems">
+      <p class="intro">Eleven simulated limma analyses, each with a known correct decision. Nine have a planted problem (a confounded batch, too few replicates, a sex imbalance, sample-handling stress…) and two are clean. Before any model is asked, the trust checks and facts computed by llomics decide which ones must go to a person.</p>
+      <div id="scoreboard" class="scoreboard" aria-live="polite"></div>
+      <div id="gallery" class="gallery"><p class="loading">Loading the benchmark…</p></div>
+    </section>
+
+    <section id="panel-build" role="tabpanel" aria-labelledby="tab-build" hidden>
+      <p class="intro">Load a differential-expression table from limma, DESeq2, edgeR, Seurat, scanpy or your own test. Common column names are recognised. Describe the design, and llomics builds the payload with its trust checks, then shows what would be sent to a model.</p>
+      <form id="build-form" class="build" autocomplete="off">
+        <fieldset>
+          <legend>1. Results table</legend>
+          <div class="row">
+            <label class="file">CSV or TSV file <input type="file" id="table-file" accept=".csv,.tsv,.txt,.tab,text/csv,text/tab-separated-values"></label>
+            <button type="button" id="load-example" class="secondary">Use the example table</button>
+          </div>
+          <p id="table-status" class="hint">One row per feature, with an effect (log fold change), a p-value and, ideally, an adjusted p-value.</p>
+        </fieldset>
+        <fieldset>
+          <legend>2. The contrast</legend>
+          <label>Contrast name <input name="unit_id" value="treated_vs_control"></label>
+          <label class="wide">Definition, in words, with the direction <input name="definition" placeholder="treated - control, adjusted for batch; positive effect = higher in treated"></label>
+          <label class="wide">Scientific question <input name="question" placeholder="Which genes respond to treatment?"></label>
+        </fieldset>
+        <fieldset>
+          <legend>3. Design (feeds the trust checks)</legend>
+          <label>Each test unit was
+            <select name="observation_type">
+              <option value="sample">a biological sample</option>
+              <option value="cell">a cell (cell-level test)</option>
+            </select>
+          </label>
+          <label>Samples per group <input name="groups" placeholder="treated=6, control=6"></label>
+          <label>Observations tested <input name="n_observations" inputmode="numeric" placeholder="sum of the groups"></label>
+          <label>Batch
+            <select name="batch_in_design">
+              <option value="unknown">not stated whether it is in the model</option>
+              <option value="yes">in the model</option>
+              <option value="no">not in the model</option>
+              <option value="single">one batch only</option>
+            </select>
+          </label>
+          <label class="wide">Samples per group and batch (optional: a header of batch names, then one line per group)
+            <textarea name="batch" rows="3" placeholder="        b1 b2&#10;treated 3  3&#10;control 3  3"></textarea>
+          </label>
+          <label>Mean-variance modelling
+            <select name="mean_variance">
+              <option value="">not declared</option>
+              <option value="voom">voom</option>
+              <option value="trend">limma trend</option>
+              <option value="negative binomial">negative binomial (DESeq2, edgeR)</option>
+              <option value="none">none</option>
+              <option value="not_applicable">not applicable</option>
+            </select>
+          </label>
+          <label>Tool <input name="tool" placeholder="guessed from the columns"></label>
+          <label class="wide">Steps, one per line <textarea name="steps" rows="3" placeholder="filterByExpr&#10;voom&#10;lmFit ~ 0 + group + batch&#10;eBayes"></textarea></label>
+        </fieldset>
+        <fieldset>
+          <legend>4. What to load</legend>
+          <label>Features per direction <input name="n_features" inputmode="numeric" value="15"></label>
+          <label>FDR <input name="fdr" inputmode="decimal" value="0.05"></label>
+          <label>Minimum |effect| <input name="min_effect" inputmode="decimal" value="0"></label>
+          <label>Exclude (regular expression) <input name="exclude" placeholder="^MT-"></label>
+          <label class="wide">Panel: features to report whether or not they rank <input name="panel" placeholder="ISG15, MX1, ACTB"></label>
+          <label class="file wide">Gene sets for enrichment (optional GMT file) <input type="file" id="gmt-file" accept=".gmt,.txt"></label>
+          <input type="hidden" name="analysis_id" value="web-demo">
+        </fieldset>
+        <div class="actions">
+          <button type="submit" id="build-button" disabled>Build the payload</button>
+          <span id="build-error" class="error" role="alert"></span>
+        </div>
+      </form>
+      <div id="build-result"></div>
+    </section>
+
+    <section id="panel-inspect" role="tabpanel" aria-labelledby="tab-inspect" hidden>
+      <p class="intro">Check any llomics payload against the contract, browse its units, and see the gates and the exact request that would go to the model. Use one of the examples, your own file, or paste JSON.</p>
+      <div class="loadbar">
+        <label>Example
+          <select id="inspect-example"><option value="">choose…</option></select>
+        </label>
+        <label class="file">Payload file <input type="file" id="inspect-file" accept=".json,application/json"></label>
+        <button type="button" id="inspect-paste-toggle" class="secondary">Paste JSON</button>
+      </div>
+      <div id="inspect-paste" hidden>
+        <textarea id="inspect-text" rows="8" placeholder='{"llomics": "0.1", ...}'></textarea>
+        <button type="button" id="inspect-run">Inspect</button>
+      </div>
+      <div id="inspect-result"></div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <p>Install the package to wrap the test you already run in scanpy, Seurat or limma, and to ask Claude with <code>judge_bedrock.py</code>. See the <a href="https://github.com/IOsinnii/llomics#readme">README</a>. MIT licence.</p>
+    <p id="versions" class="muted"></p>
+  </footer>
+
+  <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+  <script src="app.js" type="module"></script>
+</body>
+</html>

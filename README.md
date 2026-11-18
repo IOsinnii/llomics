@@ -27,6 +27,9 @@ Licence: MIT. Author and maintainer: Ivan Osinnii.
 New to package development? [HOW_IT_IS_BUILT.md](HOW_IT_IS_BUILT.md) walks through how this one
 was put together and lists what a PyPI or CRAN release still needs.
 
+**Try it without installing:** <https://iosinnii.github.io/llomics/> runs the Python package in
+your browser. See [Browser demo](#browser-demo).
+
 ## The pattern
 
 ```text
@@ -217,6 +220,34 @@ model has not been run on it yet. See [benchmark/README.md](benchmark/README.md)
 python benchmark/score.py
 ```
 
+## Browser demo
+
+`web/` is a static page that runs the Python package in the visitor's browser with
+[Pyodide](https://pyodide.org) (CPython compiled to WebAssembly). The core uses only the standard
+library, so the page runs the same code as an installed package, unmodified. It has three parts:
+
+- **Planted problems.** The eleven benchmark scenarios, scored by `benchmark/score.py` in the
+  browser: what the trust and fact gates decide before any model is asked. When answers from
+  `python benchmark/score.py --ask` are committed under `benchmark/answers/`, the page replays
+  them and gates them again with the current code.
+- **Build a payload.** Load a differential table (column names from limma, DESeq2, edgeR, Seurat
+  and scanpy are recognised), describe the design, and get the payload, its trust checks, the
+  request that would be sent, and the same call written in Python.
+- **Inspect a payload.** Validate any payload and browse its units, gates and requests.
+
+Nothing is uploaded and no model is called. `web/bridge.py` is the only Python written for the
+page: it parses tables and form fields and calls the package.
+
+```bash
+python tools/build_site.py --serve      # builds _site/ and serves it at http://localhost:8000
+```
+
+`tools/build_site.py` copies the page, the Python files it needs in the repository's layout, and
+a pinned Pyodide release (downloaded once into `.cache/`, checked against SHA-256 hashes) into
+`_site/`, so the published page loads nothing from other hosts. `.github/workflows/pages.yml` runs
+the tests, builds the folder and publishes it to GitHub Pages on every push to `main`. It needs a
+one-time setting: Settings > Pages > Source: GitHub Actions.
+
 ## Layout
 
 ```text
@@ -226,7 +257,8 @@ r/            the R package: the same core, plus the limma and Seurat adapters
 skills/       nine SKILL.md files; llomics-core and llomics-judge carry runnable scripts
 benchmark/    scenarios, payloads and the scorer
 tests/        fixtures, golden payloads, and the R-versus-Python parity test
-tools/sync.py copies the shared files to where each package and skill needs them
+tools/        sync.py copies the shared files where each package needs them; build_site.py builds the demo
+web/          the browser demo: the page, its worker, and bridge.py
 examples/     the PBMC 10k worked example and a simulated limma run
 ```
 
