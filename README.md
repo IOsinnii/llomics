@@ -35,6 +35,20 @@ was put together and lists what a PyPI or CRAN release still needs.
 **Try it without installing:** <https://iosinnii.github.io/llomics/> runs the Python package in
 your browser. See [Browser demo](#browser-demo).
 
+## Releases
+
+**0.1.0**, the first release. Not yet tagged or published on PyPI or CRAN. Both packages are at
+0.1.0 and implement contract 0.1.
+
+- **Python** (`llomics`): `rank_genes_groups()` wraps scanpy; `dge_payload()` and
+  `clusters_payload()` build payloads from standard tables; `llomics-validate` checks one against
+  the contract.
+- **R** (`llomics`): `llomics_FindAllMarkers()`, `llomics_FindMarkers()` and `llomics_limma()` wrap
+  Seurat and limma; `llomics_dge_payload()` and `llomics_clusters_payload()` build from standard
+  tables.
+
+Full notes: [CHANGELOG.md](CHANGELOG.md) and [r/llomics/NEWS.md](r/llomics/NEWS.md).
+
 ## The pattern
 
 ```text
