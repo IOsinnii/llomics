@@ -1,5 +1,10 @@
 # llomics
 
+<p align="center">
+  <img src="python/llomics/logo.png" alt="llomics logo (Python)" height="160">
+  <img src="r/llomics/man/figures/logo.png" alt="llomics logo (R)" height="160">
+</p>
+
 Turn the output of statistical steps in omics pipelines into small, self-describing payloads that
 an LLM can reason over, and decide in code what the answers are allowed to settle.
 
